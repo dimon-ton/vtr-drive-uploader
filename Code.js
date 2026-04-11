@@ -195,7 +195,8 @@ function startChunkedUpload(formData) {
       mimeType: formData.mimeType,
       topicId: formData.topicId || '',
       sectionId: formData.sectionId || '',
-      totalChunks: 0
+      totalChunks: formData.totalChunks || 0,
+      finalized: false
     }));
 
     return { success: true, sessionId: sessionId, fileName: newFileName };
@@ -204,13 +205,16 @@ function startChunkedUpload(formData) {
   }
 }
 
-// data: { sessionId, chunk (base64), chunkIndex, isLast, mimeType }
+// data: { sessionId, chunk (base64), chunkIndex, mimeType }
+// Parallel-safe: assembly is triggered when file count in session folder === totalChunks,
+// not by an "isLast" flag, so chunks can arrive in any order.
 function uploadChunk(data) {
   try {
     var props = PropertiesService.getScriptProperties();
     var metaKey = 'session_' + data.sessionId;
-    var meta = JSON.parse(props.getProperty(metaKey));
-    if (!meta) return { success: false, error: 'Session not found: ' + data.sessionId };
+    var rawMeta = props.getProperty(metaKey);
+    if (!rawMeta) return { success: false, error: 'Session not found: ' + data.sessionId };
+    var meta = JSON.parse(rawMeta);
 
     // บันทึก chunk ลงใน temp folder ของ session นี้
     var tmpFolder = getTempFolder();
@@ -222,31 +226,65 @@ function uploadChunk(data) {
     var chunkBlob = Utilities.newBlob(decoded, 'application/octet-stream', 'chunk_' + String(data.chunkIndex).padStart(6, '0'));
     sessionFolder.createFile(chunkBlob);
 
-    // อัปเดต totalChunks
-    meta.totalChunks = Math.max(meta.totalChunks, data.chunkIndex + 1);
-    props.setProperty(metaKey, JSON.stringify(meta));
+    // นับจำนวน chunk ที่เก็บใน session folder
+    var count = 0;
+    var countIter = sessionFolder.getFiles();
+    while (countIter.hasNext()) { countIter.next(); count++; }
 
-    if (!data.isLast) {
+    if (count < meta.totalChunks) {
       return { success: true, complete: false };
     }
 
-    // --- chunk สุดท้าย: รวมทุก chunk แล้วสร้างไฟล์จริง ---
-    // เรียง chunks ตามชื่อ
+    // --- ครบทุก chunk แล้ว: ต้องรวมไฟล์ ---
+    // Lock เพื่อกันไม่ให้สอง chunk ที่มาถึงพร้อมกันทั้งคู่ trigger assembly
+    var lock = LockService.getScriptLock();
+    try {
+      lock.waitLock(30000);
+    } catch (lockErr) {
+      return { success: true, complete: false };
+    }
+    try {
+      // อ่าน meta ใหม่หลัง lock — ถ้ามี chunk อื่น finalized ไปแล้ว ให้บอก client ว่าเสร็จ
+      var freshRaw = props.getProperty(metaKey);
+      if (!freshRaw) {
+        // session ถูกลบไปแล้ว = finalize เสร็จแล้ว
+        return { success: true, complete: true, alreadyFinalized: true };
+      }
+      var freshMeta = JSON.parse(freshRaw);
+      if (freshMeta.finalized) {
+        return { success: true, complete: true, alreadyFinalized: true };
+      }
+      freshMeta.finalized = true;
+      props.setProperty(metaKey, JSON.stringify(freshMeta));
+      meta = freshMeta;
+    } finally {
+      lock.releaseLock();
+    }
+
+    // --- รวมทุก chunk แล้วสร้างไฟล์จริง ---
+    // เรียง chunks ตามชื่อ (chunk_000000, chunk_000001, ...)
     var chunkFiles = [];
     var allFiles = sessionFolder.getFiles();
     while (allFiles.hasNext()) chunkFiles.push(allFiles.next());
     chunkFiles.sort(function(a, b) { return a.getName() < b.getName() ? -1 : 1; });
 
-    // รวม bytes ทีละ chunk (ไม่ download ทั้งหมดพร้อมกัน)
-    var allBytes = [];
+    // รวม bytes แบบ O(n) ด้วย Uint8Array (แทนที่ push byte ทีละตัวซึ่งเป็น O(n²))
+    var byteArrays = new Array(chunkFiles.length);
+    var total = 0;
     for (var i = 0; i < chunkFiles.length; i++) {
-      var bytes = chunkFiles[i].getBlob().getBytes();
-      for (var j = 0; j < bytes.length; j++) allBytes.push(bytes[j]);
+      byteArrays[i] = chunkFiles[i].getBlob().getBytes();
+      total += byteArrays[i].length;
+    }
+    var combined = new Uint8Array(total);
+    var offset = 0;
+    for (var k = 0; k < byteArrays.length; k++) {
+      combined.set(byteArrays[k], offset);
+      offset += byteArrays[k].length;
     }
 
     // สร้างไฟล์จริงในโฟลเดอร์ปลายทาง
     var destFolder = meta.sectionId ? getWsFolder(meta.sectionId) : getTopicFolder(meta.topicId);
-    var finalBlob = Utilities.newBlob(allBytes, meta.mimeType, meta.fileName);
+    var finalBlob = Utilities.newBlob(combined, meta.mimeType, meta.fileName);
     var file = destFolder.createFile(finalBlob);
     var fileId = file.getId();
 
