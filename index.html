@@ -16,6 +16,10 @@
     .hd h1{font-size:18px;font-weight:700;color:var(--ac)}
     .hd p{font-size:11px;color:var(--dm);margin-top:2px}
 
+    /* image hints */
+    .hints{margin-top:8px;padding-left:46px;display:flex;flex-wrap:wrap;gap:4px}
+    .hint{font-size:10px;padding:2px 9px;border-radius:10px;background:rgba(255,167,38,.08);color:var(--or);border:1px solid rgba(255,167,38,.2)}
+
     .st{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding:10px 16px;background:var(--sf);border-bottom:1px solid var(--bd);font-size:12px}
     .st span{color:var(--ac);font-weight:700}
 
@@ -54,9 +58,7 @@
     .go button{width:26px;height:26px;border-radius:50%;border:none;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .ov-v{background:var(--ac);color:#0c141c}
     .ov-d{background:var(--rd);color:#fff}
-    /* Video badge */
     .vi-badge{position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,.7);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600;pointer-events:none}
-    /* File size */
     .fi-size{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.7);color:var(--dm);font-size:8px;padding:1px 4px;border-radius:3px;pointer-events:none}
 
     /* Upload */
@@ -69,6 +71,11 @@
     .pg-bar{width:100%;height:6px;background:var(--bd);border-radius:3px;overflow:hidden}
     .pg-fill{height:100%;background:var(--ac);border-radius:3px;transition:width .2s}
     .pg-text{font-size:10px;color:var(--dm);margin-top:2px}
+
+    /* White School script block */
+    .ws-script{margin-top:8px;padding-left:46px}
+    .ws-script-inner{background:rgba(79,195,247,.04);border-left:3px solid rgba(79,195,247,.25);border-radius:0 6px 6px 0;padding:8px 12px}
+    .ws-script-text{font-size:12px;color:var(--dm);line-height:1.8}
 
     /* Modal */
     .mb{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
@@ -94,30 +101,104 @@
     @keyframes spin{to{transform:rotate(360deg)}}
 
     .hidden{display:none!important}
+
+    /* ===================== MOBILE IMPROVEMENTS ===================== */
+    @media (max-width: 600px) {
+      /* Safe area for notch / home bar */
+      body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+      .hd { padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
+      .toast { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+
+      /* Header — tighter on small screens */
+      .hd h1 { font-size: 15px; }
+      .hd p  { font-size: 10px; }
+
+      /* Stat bar — smaller gap so it fits one line */
+      .st { gap: 8px; font-size: 11px; padding: 8px 12px; }
+
+      /* Action buttons — full-width and taller for thumbs */
+      .act { flex-direction: column; gap: 6px; padding: 10px 12px; }
+      .btn { width: 100%; justify-content: center; padding: 12px 16px; font-size: 14px; }
+
+      /* Section header */
+      .oh { padding: 12px; }
+      .ot { font-size: 14px; }
+
+      /* Topic row */
+      .tc { padding: 12px 12px; }
+      .tn { min-width: 32px; height: 32px; font-size: 11px; }
+      .tt { font-size: 12px; }
+
+      /* Gallery — bigger thumbnails, no left-indent on mobile */
+      .gl { padding-left: 0; gap: 8px; margin-top: 10px; }
+      .gi { width: 96px; height: 96px; border-radius: 10px; }
+
+      /* Always show overlay action buttons on touch (no hover) */
+      .gi .go { opacity: 1; background: rgba(0,0,0,.45); }
+      .go button { width: 36px; height: 36px; font-size: 14px; }
+
+      /* Upload buttons — bigger tap area */
+      .ur { padding-left: 0; gap: 8px; margin-top: 10px; }
+      .ul { padding: 10px 16px; font-size: 13px; border-radius: 8px; flex: 1; justify-content: center; min-width: 120px; }
+
+      /* Progress */
+      .pg-wrap { padding-left: 0; }
+
+      /* White School script */
+      .ws-script { padding-left: 0; margin-top: 8px; }
+      .ws-script-text { font-size: 11px; line-height: 1.7; }
+
+      /* Image hints */
+      .hints { padding-left: 0; }
+      .hint { font-size: 10px; }
+
+      /* Modal — full screen on phone */
+      .mb { padding: 0; align-items: flex-end; }
+      .mx {
+        max-width: 100vw;
+        width: 100vw;
+        max-height: 92vh;
+        border-radius: 16px 16px 0 0;
+        border-bottom: none;
+      }
+      .mx img  { max-width: 100vw; max-height: 60vh; }
+      .mx video{ max-width: 100vw; max-height: 60vh; }
+
+      /* Modal footer — stack buttons vertically */
+      .mf { flex-wrap: wrap; gap: 8px; padding: 12px; }
+      .mn { font-size: 12px; width: 100%; }
+      .ms { display: none; } /* hide size on small screens to save space */
+      .btn-sm, .btn-rs { flex: 1; padding: 10px 8px; font-size: 13px; text-align: center; justify-content: center; }
+      .mc { top: 10px; right: 10px; width: 36px; height: 36px; font-size: 18px; }
+
+      /* Toast — full width */
+      .toast { width: calc(100% - 32px); text-align: center; white-space: normal; font-size: 12px; }
+    }
   </style>
 </head>
 <body>
 
 <div class="hd">
-  <h1>📋 VTR Image & Video Uploader</h1>
-  <p>อัปโหลดรูปภาพและวิดีโอหลักฐาน · คุณภาพต้นฉบับ · ดาวน์โหลด ZIP</p>
+  <h1>🎗 สถานศึกษาสีขาว</h1>
+  <p>อัปโหลดรูปภาพและวิดีโอ · โครงการสถานศึกษาสีขาวปลอดยาเสพติดและอบายมุข</p>
 </div>
 
-<div class="st">
-  <div>หัวข้อทั้งหมด: <span id="sT">0</span></div>
-  <div>มีไฟล์แล้ว: <span id="sD">0</span></div>
-  <div>ไฟล์ทั้งหมด: <span id="sF">0</span></div>
-  <div>ยังไม่มี: <span id="sR">0</span></div>
+<!-- White School Panel -->
+<div id="wsPanel">
+  <div class="st">
+    <div>หัวข้อทั้งหมด: <span id="wsST">0</span></div>
+    <div>มีไฟล์แล้ว: <span id="wsSD">0</span></div>
+    <div>ไฟล์ทั้งหมด: <span id="wsSF">0</span></div>
+    <div>ยังไม่มี: <span id="wsSR">0</span></div>
+  </div>
+  <div class="act">
+    <button class="btn btn-p" id="wsBtnZ" disabled onclick="doWsZip()">📦 ดาวน์โหลด ZIP</button>
+    <button class="btn btn-g" onclick="doWsRefresh()">🔄 รีเฟรช</button>
+  </div>
+  <div id="wsList"></div>
 </div>
 
-<div class="act">
-  <button class="btn btn-p" id="btnZ" disabled onclick="doZip()">📦 ดาวน์โหลด ZIP</button>
-  <button class="btn btn-g" onclick="doRefresh()">🔄 รีเฟรช</button>
-</div>
-
-<div id="list"></div>
-
-<!-- Modal -->
+<!-- Shared Modal -->
 <div class="mb hidden" id="modal" onclick="closeM(event)">
   <div class="mx">
     <button class="mc" onclick="closeM()">✕</button>
@@ -127,7 +208,7 @@
       <div class="mn" id="mNm"></div>
       <div class="ms" id="mSz"></div>
       <div style="display:flex;gap:6px">
-        <label class="btn btn-sm btn-g" style="cursor:pointer">🔄 เปลี่ยน<input type="file" accept="image/*,video/*" style="display:none" id="repIn" /></label>
+        <label class="btn btn-sm btn-g" style="cursor:pointer">🔄 เปลี่ยน<input type="file" accept="image/*,video/*,video/mp4,video/quicktime,video/3gpp,video/x-matroska" style="display:none" id="repIn" /></label>
         <button class="btn-rs" id="mDl">🗑 ลบ</button>
       </div>
     </div>
@@ -138,6 +219,7 @@
 <div class="ov hidden" id="ov"><div class="sp"></div><p id="ovT">กำลังดำเนินการ...</p></div>
 
 <script>
+// ===================== VTR DATA =====================
 var TOPICS=[
   {org:"องค์ประกอบที่ 1",orgTitle:"การประเมินประสิทธิภาพและประสิทธิผลการปฏิบัติงานตามมาตรฐานตำแหน่ง",groups:[
     {dan:"ด้านที่ 1 การจัดการเรียนรู้",items:[
@@ -182,12 +264,90 @@ var TOPICS=[
   ]}
 ];
 
-// State
-var uMap={}; // uMap[topicId] = [{ fileId, fileName, isVideo, mimeType, thumbnail, previewUrl, sizeText }, ...]
-var curP=null;
-var uploadProgress={}; // uploadProgress[topicId] = { current, total, percent }
+// ===================== WHITE SCHOOL DATA =====================
+var WS_TOPICS=[
+  {
+    id:"ws-01",num:"บทนำ",
+    title:"แนะนำโรงเรียนบ้านโพนแท่น",
+    script:"โรงเรียนบ้านโพนแท่นตั้งอยู่ หมู่ที่ ๑๑ ตำบลดงครั่งน้อย อำเภอเกษตรวิสัย จังหวัดร้อยเอ็ด เปิดทำการเรียนการสอนตั้งแต่ระดับชั้นอนุบาลปีที่ 2 ถึงระดับชั้นมัธยมศึกษาปีที่ 3 ด้วยความมุ่งมั่นขับเคลื่อนคุณภาพการศึกษาภายใต้วิสัยทัศน์การบริหารงานของ นางสาวพัทธ์ธีรา วารุรัง ตระหนักในพันธกิจหลักของการสร้าง \"ภูมิคุ้มกันชีวิต\" บนฐานทรัพยากรบุคคลซึ่งประกอบด้วย ข้าราชการครูและบุคลากรทางการศึกษาจำนวน 19 คน นักเรียน จำนวน 146 คน โดยโรงเรียนบ้านโพนแท่นได้ดำเนินงานตามยุทธศาสตร์ 5 ด้าน ตามโครงการสถานศึกษาสีขาวปลอดยาเสพติดและอบายมุข",
+    hints:["ภาพอาคารโรงเรียนด้านหน้า","ภาพป้ายชื่อโรงเรียน","ภาพผู้อำนวยการโรงเรียน (นางสาวพัทธ์ธีรา วารุรัง)","ภาพหมู่คณะครูและบุคลากรทั้ง 19 คน","ภาพนักเรียนทั้งหมด 146 คน"]
+  },
+  {
+    id:"ws-02",num:"มาตรการที่ 1",
+    title:"ด้านการป้องกัน",
+    script:"โรงเรียนบ้านโพนแท่น มุ่งเน้นการสร้างภูมิคุ้มกันให้กับผู้เรียนผ่านกิจกรรมที่หลากหลาย โดยได้ดำเนินกิจกรรม \"ห้องเรียนสีขาว\" พร้อมทั้งประกาศห้องเรียนสีขาวดีเด่นเป็นประจำทุกเดือน และมอบรางวัลเพื่อสร้างแรงจูงใจให้กับนักเรียน นอกจากนี้ยังดำเนินโครงการโรงเรียนปลอดบุหรี่ โดยบูรณาการเข้ากับการจัดการเรียนการสอน ควบคู่กับการจัดกิจกรรมส่งเสริมการเรียนรู้ และกิจกรรมรณรงค์เดินขบวนต่อต้านยาเสพติดร่วมกับโรงเรียนเครือข่ายและชุมชน รวมถึงการจัดกิจกรรมเชิงสร้างสรรค์ อาทิ กิจกรรมคุณธรรมนำใจห่างไกลยาเสพติด กิจกรรมกีฬาต้านภัยยาเสพติด กิจกรรมพระสอนศีลธรรม กิจกรรมคีตะศิลป์ และกิจกรรมเสริมทักษะอาชีพ เพื่อพัฒนาผู้เรียนให้เป็นคนดี มีคุณภาพ และห่างไกลยาเสพติดอย่างยั่งยืน",
+    hints:["ภาพกิจกรรมห้องเรียนสีขาว","ภาพพิธีมอบรางวัลห้องเรียนสีขาวดีเด่น","ภาพป้ายหรือกิจกรรมโรงเรียนปลอดบุหรี่","ภาพขบวนเดินรณรงค์ต่อต้านยาเสพติด","ภาพกิจกรรมคุณธรรม/พระสอนศีลธรรม","ภาพกิจกรรมกีฬาต้านภัยยาเสพติด","ภาพกิจกรรมคีตะศิลป์/ดนตรี","ภาพกิจกรรมเสริมทักษะอาชีพ"]
+  },
+  {
+    id:"ws-03",num:"มาตรการที่ 2",
+    title:"ด้านการค้นหา",
+    script:"โรงเรียนบ้านโพนแท่นได้จัดทำข้อมูลนักเรียนรายบุคคลอย่างเป็นระบบ มีการคัดกรองและจำแนกกลุ่มนักเรียน รวมถึงการสุ่มตรวจสารเสพติดตามมาตรการที่กำหนด และรายงานผลผ่านระบบการสำรวจอย่างต่อเนื่อง ซึ่งจากการดำเนินงานพบว่า นักเรียนโรงเรียนบ้านโพนแท่นปลอดยาเสพติด คิดเป็นร้อยละ 100",
+    hints:["ภาพระบบข้อมูลนักเรียนรายบุคคล (บัตร/แฟ้ม/โปรแกรม)","ภาพกิจกรรมการคัดกรองและจำแนกกลุ่มนักเรียน","ภาพการสุ่มตรวจสารเสพติด","ภาพรายงานผลหรือกราฟแสดงนักเรียนปลอดยา 100%"]
+  },
+  {
+    id:"ws-04",num:"มาตรการที่ 3",
+    title:"ด้านการรักษา",
+    script:"โรงเรียนบ้านโพนแท่นมีนโยบายในการดูแลช่วยเหลือ บำบัดรักษา และส่งต่อผู้เรียนที่มีความเสี่ยง โดยประสานความร่วมมือกับหน่วยงานภายนอก เช่น โรงพยาบาลส่งเสริมสุขภาพประจำตำบลดงครั่งน้อย สถานีตำรวจภูธรดงครั่งใหญ่ โรงพยาบาลเกษตรวิสัย และหน่วยงานระดับอำเภอ นอกจากนี้ยังได้จัดตั้ง \"คลินิกเสมารักษ์\" เพื่อให้คำปรึกษา แนะนำ และดูแลช่วยเหลือนักเรียนอย่างใกล้ชิด",
+    hints:["ภาพป้ายหรือห้องคลินิกเสมารักษ์","ภาพครูให้คำปรึกษานักเรียนในคลินิก","ภาพการประชุมร่วมกับ รพ.สต. / โรงพยาบาลเกษตรวิสัย","ภาพการประสานงานกับสถานีตำรวจภูธร","ภาพเอกสารส่งต่อนักเรียนไปรับการช่วยเหลือ"]
+  },
+  {
+    id:"ws-05",num:"มาตรการที่ 4",
+    title:"ด้านการเฝ้าระวัง",
+    script:"โรงเรียนบ้านโพนแท่นได้จัดให้มี \"ตู้แดงเสมารักษ์\" เพื่อเป็นช่องทางรับแจ้งข้อมูลและปัญหาที่เกี่ยวข้องกับยาเสพติดและอบายมุข พร้อมทั้งจัดตั้งชมรมเสมารักษ์ป้องกันยาเสพติด เพื่อส่งเสริมให้นักเรียนมีความรู้ ความตระหนัก และมีส่วนร่วมในการเฝ้าระวังปัญหาอย่างต่อเนื่อง",
+    hints:["ภาพตู้แดงเสมารักษ์","ภาพนักเรียนใช้ช่องทางรับแจ้งข้อมูล","ภาพกิจกรรมชมรมเสมารักษ์","ภาพนักเรียนแกนนำร่วมเฝ้าระวัง","ภาพป้ายหรือสัญลักษณ์ชมรมเสมารักษ์"]
+  },
+  {
+    id:"ws-06",num:"มาตรการที่ 5",
+    title:"ด้านการบริหารจัดการ",
+    script:"โรงเรียนบ้านโพนแท่นมีการกำหนดนโยบาย ยุทธศาสตร์ และแผนดำเนินงานโครงการสถานศึกษาสีขาวอย่างชัดเจน มีคณะกรรมการดำเนินงานและห้องปฏิบัติงานเฉพาะด้าน พร้อมทั้งบูรณาการความร่วมมือกับหน่วยงานที่เกี่ยวข้องทุกภาคส่วน โดยยึดหลักการมีส่วนร่วม มีการกำกับ ติดตาม ประเมินผล และรายงานผลการดำเนินงานอย่างเป็นระบบ",
+    hints:["ภาพเอกสารนโยบาย/แผนงานโครงการสถานศึกษาสีขาว","ภาพคำสั่งแต่งตั้งคณะกรรมการดำเนินงาน","ภาพการประชุมคณะกรรมการ","ภาพห้องปฏิบัติงานเฉพาะด้าน","ภาพรายงานผลการดำเนินงาน/สรุปโครงการ"]
+  },
+  {
+    id:"ws-07",num:"WISE²",
+    title:"โมเดล WISE² และวงจร PDCA",
+    script:"โรงเรียนบ้านโพนแท่นตระหนักถึงความสำคัญของการป้องกันและแก้ไขปัญหายาเสพติดในสถานศึกษา จึงได้ดำเนินงานตามโครงการสถานศึกษาสีขาว ปลอดยาเสพติดและอบายมุข โดยนำแนวทาง WISE² Model มาประยุกต์ใช้ในการบริหารจัดการเพื่อส่งเสริมให้ผู้เรียนมีความรู้ ความเข้าใจ และสามารถรู้เท่าทันภัยยาเสพติด สร้างภูมิคุ้มกันทางความคิดและพฤติกรรมที่เหมาะสม อันจะนำไปสู่การดำเนินชีวิตอย่างปลอดภัยและยั่งยืน โดยยึดหลักการบริหารตามวงจร PDCA อย่างเป็นระบบและต่อเนื่อง",
+    hints:["ภาพแผนภูมิหรือโปสเตอร์ WISE² Model","ภาพแผนภาพวงจร PDCA ของโรงเรียน","ภาพบอร์ดนิทรรศการแสดง WISE² + PDCA","ภาพการนำเสนอหรืออบรม WISE² Model"]
+  },
+  {
+    id:"ws-08",num:"Plan",
+    title:"W – Wisdom & Warm (การวางแผน)",
+    script:"ในขั้นตอน Plan (W – Wisdom & Warm) การสร้างความรู้และความห่วงใย โรงเรียนได้ดำเนินการวางแผนอย่างรอบด้าน โดยแต่งตั้งคณะกรรมการดำเนินงาน กำหนดนโยบาย เป้าหมาย และตัวชี้วัด วิเคราะห์สภาพปัญหาในบริบทของโรงเรียนและชุมชน รวมถึงจัดทำแผนปฏิบัติการ พร้อมทั้งคัดกรองนักเรียนออกเป็น 3 กลุ่ม ได้แก่ กลุ่มปกติ กลุ่มเฝ้าระวัง และกลุ่มเสี่ยง เพื่อให้สามารถดูแลช่วยเหลือได้อย่างเหมาะสม",
+    hints:["ภาพคำสั่งแต่งตั้งคณะกรรมการดำเนินงาน","ภาพแผนปฏิบัติการประจำปี","ภาพตารางหรือแบบฟอร์มการคัดกรองนักเรียน 3 กลุ่ม","ภาพกราฟ/สรุปผลการคัดกรองนักเรียน","ภาพประชุมวางแผนร่วมกับทีมครู"]
+  },
+  {
+    id:"ws-09",num:"Do",
+    title:"I – Inspiration & Involvement (การปฏิบัติ)",
+    script:"ในขั้นตอน Do (I – Inspiration & Involvement) การสร้างแรงบันดาลใจและการมีส่วนร่วม โรงเรียนได้ดำเนินกิจกรรมอย่างหลากหลายเพื่อสร้างแรงบันดาลใจและการมีส่วนร่วม เช่น การจัดกิจกรรมรณรงค์ต่อต้านยาเสพติดในวันสำคัญ การบูรณาการเนื้อหาในชั้นเรียน การจัดการเรียนรู้แบบ Active Learning การพัฒนาทักษะชีวิต (Life Skills) กิจกรรมเชิงสร้างสรรค์ รวมถึงกิจกรรมเพื่อนช่วยเพื่อน และการมีส่วนร่วมของผู้ปกครองและชุมชน",
+    hints:["ภาพกิจกรรมรณรงค์ต่อต้านยาเสพติดในวันสำคัญ (26 มิ.ย.)","ภาพการบูรณาการเนื้อหายาเสพติดในชั้นเรียน","ภาพกิจกรรม Active Learning ในห้องเรียน","ภาพกิจกรรมพัฒนาทักษะชีวิต (Life Skills)","ภาพกิจกรรมเพื่อนช่วยเพื่อน","ภาพผู้ปกครองและชุมชนร่วมกิจกรรม"]
+  },
+  {
+    id:"ws-10",num:"Check",
+    title:"S – Shield & Supervise (การติดตาม)",
+    script:"ในขั้นตอน Check (S – Shield & Supervise) การป้องกันและกำกับติดตาม โรงเรียนได้มีระบบกำกับ ติดตาม และตรวจสอบอย่างใกล้ชิด โดยใช้ระบบดูแลช่วยเหลือนักเรียน การติดตามพฤติกรรมรายบุคคล การดูแลนักเรียนกลุ่มเสี่ยงแบบรายกรณี การเยี่ยมบ้าน และการเปิดช่องทางรับแจ้งข้อมูล พร้อมทั้งมีการตรวจพื้นที่เสี่ยงในโรงเรียนอย่างสม่ำเสมอ เพื่อป้องกันและแก้ไขปัญหาได้อย่างทันท่วงที",
+    hints:["ภาพครูติดตามพฤติกรรมนักเรียนรายบุคคล","ภาพบันทึกการดูแลนักเรียนกลุ่มเสี่ยงรายกรณี","ภาพครูเยี่ยมบ้านนักเรียน","ภาพการตรวจพื้นที่เสี่ยงในโรงเรียน","ภาพช่องทางรับแจ้งข้อมูล/ตู้รับเรื่อง"]
+  },
+  {
+    id:"ws-11",num:"Act",
+    title:"E – Evaluation & Enhance (การประเมินและพัฒนา)",
+    script:"ในขั้นตอน Act (E – Evaluation & Enhance) การประเมินและพัฒนา โรงเรียนได้มีการประเมินผลและพัฒนาอย่างต่อเนื่อง โดยสรุปผลการดำเนินงาน รับฟังความคิดเห็นจากครู นักเรียน ผู้ปกครอง และชุมชน วิเคราะห์ข้อมูลเพื่อนำไปปรับปรุงแผนงาน และถอดบทเรียน (Lesson Learned) เพื่อพัฒนานวัตกรรมให้มีประสิทธิภาพยิ่งขึ้นในรอบปีถัดไป",
+    hints:["ภาพการประชุมสรุปผลการดำเนินงาน","ภาพการรับฟังความคิดเห็น (ครู นักเรียน ผู้ปกครอง ชุมชน)","ภาพรายงานสรุปผล/ถอดบทเรียน","ภาพนวัตกรรมหรือผลงานที่พัฒนาขึ้น","ภาพการปรับปรุงแผนงานรอบถัดไป"]
+  },
+  {
+    id:"ws-12",num:"บทสรุป",
+    title:"ผลสำเร็จ – สถานศึกษาสีขาว ระดับเพชร ปีที่ ๓",
+    script:"จากการดำเนินงานอย่างต่อเนื่องและเป็นระบบส่งผลให้โรงเรียนบ้านโพนแท่นก้าวสู่ความสำเร็จฐานะ สถานศึกษาสีขาวปลอดยาเสพติดและอบายมุข รักษามาตรฐานระดับเพชร ปีที่ ๓ โรงเรียนบ้านโพนแท่นไม่เพียงเป็นสถานศึกษาที่ปลอดยาเสพติดและอบายมุขแต่ยังเป็น โรงเรียนแห่งความหวังของชุมชน ผู้ปกครอง และนักเรียน เป็นพื้นที่แห่งการเรียนรู้ที่ปลอดภัย อบอุ่น และเป็นแหล่งบ่มเพาะให้นักเรียนเติบโตเป็น \"คนดี คนเก่ง และมีคุณธรรม\" สามารถดำรงชีวิตอยู่ในสังคมได้อย่างมีความสุขและยั่งยืน ขอขอบพระคุณท่านคณะกรรมการทุกท่านค่ะ",
+    hints:["ภาพโล่รางวัลหรือใบประกาศสถานศึกษาสีขาวระดับเพชร","ภาพพิธีรับรางวัลระดับเพชร ปีที่ ๓","ภาพผู้อำนวยการรับมอบรางวัล","ภาพนักเรียนและครูร่วมแสดงความยินดี","ภาพโรงเรียนและชุมชนร่วมกัน"]
+  }
+];
 
-window.onload=function(){render();doRefresh()};
+// ===================== STATE =====================
+var uMap={};
+var wsMap={};
+var curP=null;
+var uploadProgress={};
+var wsUploadProgress={};
+
+window.onload=function(){renderWs();doWsRefresh();};
 
 function render(){
   var h='',all=[];
@@ -200,7 +360,6 @@ function render(){
         var fs=uMap[it.id]||[];
         var has=fs.length>0;
         var prog=uploadProgress[it.id];
-
         h+='<div class="tc"><div class="th"><div class="tn">'+it.num+'</div><div class="tb"><div class="tt">'+it.text+'</div><div class="tm">';
         if(has){
           var vc=0,ic=0;
@@ -213,44 +372,33 @@ function render(){
           h+='<span class="bd bd-no">ยังไม่มีไฟล์</span>';
         }
         h+='</div></div></div>';
-
-        // Gallery
         if(has){
           h+='<div class="gl">';
           fs.forEach(function(f,i){
-            h+='<div class="gi" onclick="openM(\''+it.id+'\','+i+')">';
-            if(f.isVideo){
-              h+='<img src="'+f.thumbnail+'" onerror="this.style.background=\'#1a2836\'" />';
-              h+='<div class="vi-badge">▶ VDO</div>';
-            }else{
-              h+='<img src="'+f.thumbnail+'" loading="lazy" />';
-            }
+            h+='<div class="gi" onclick="openM(\'vtr\',\''+it.id+'\','+i+')">';
+            if(f.isVideo){h+='<img src="'+f.thumbnail+'" onerror="this.style.background=\'#1a2836\'" />';h+='<div class="vi-badge">▶ VDO</div>';}
+            else{h+='<img src="'+f.thumbnail+'" loading="lazy" />';}
             if(f.sizeText)h+='<div class="fi-size">'+f.sizeText+'</div>';
-            h+='<div class="go">';
-            h+='<button class="ov-v" onclick="event.stopPropagation();openM(\''+it.id+'\','+i+')">👁</button>';
-            h+='<button class="ov-d" onclick="event.stopPropagation();doDel(\''+it.id+'\','+i+')">✕</button>';
-            h+='</div></div>';
+            h+='<div class="go"><button class="ov-v" onclick="event.stopPropagation();openM(\'vtr\',\''+it.id+'\','+i+')">👁</button>';
+            h+='<button class="ov-d" onclick="event.stopPropagation();doDelVtr(\''+it.id+'\','+i+')">✕</button></div></div>';
           });
           h+='</div>';
         }
-
-        // Progress bar
         if(prog){
+          var pgLabel=prog.chunkMode
+            ? 'กำลังอัปโหลดวิดีโอขนาดใหญ่... ('+prog.percent+'%)'
+            : 'กำลังอัปโหลด '+prog.current+'/'+prog.total+' ('+prog.percent+'%)';
           h+='<div class="pg-wrap"><div class="pg-bar"><div class="pg-fill" style="width:'+prog.percent+'%"></div></div>';
-          h+='<div class="pg-text">กำลังอัปโหลด '+prog.current+'/'+prog.total+' ('+prog.percent+'%)</div></div>';
+          h+='<div class="pg-text">'+pgLabel+'</div></div>';
         }
-
-        // Upload buttons
         h+='<div class="ur">';
         h+='<label class="ul">📷 '+(has?'เพิ่มรูป':'เลือกรูป')+'<input type="file" accept="image/*" multiple style="display:none" onchange="doUp(this,\''+it.id+'\',\'image\')" /></label>';
-        h+='<label class="ul">🎬 '+(has?'เพิ่มวิดีโอ':'เลือกวิดีโอ')+'<input type="file" accept="video/*" multiple style="display:none" onchange="doUp(this,\''+it.id+'\',\'video\')" /></label>';
+        h+='<label class="ul">🎬 '+(has?'เพิ่มวิดีโอ':'เลือกวิดีโอ')+'<input type="file" accept="video/*,video/mp4,video/quicktime,video/3gpp,video/x-matroska" multiple style="display:none" onchange="doUp(this,\''+it.id+'\',\'video\')" /></label>';
         h+='</div></div>';
       });
     });
   });
   document.getElementById('list').innerHTML=h;
-
-  // Stats
   var dn=0,tf=0;
   all.forEach(function(it){var f=uMap[it.id]||[];if(f.length)dn++;tf+=f.length});
   document.getElementById('sT').textContent=all.length;
@@ -260,7 +408,189 @@ function render(){
   document.getElementById('btnZ').disabled=tf===0;
 }
 
-// Upload
+// ===================== WHITE SCHOOL RENDER =====================
+function renderWs(){
+  var h='';
+  h+='<div class="oh"><div class="ol">สถานศึกษาสีขาว</div><div class="ot">โครงการสถานศึกษาสีขาวปลอดยาเสพติดและอบายมุข – WISE² Model</div></div>';
+  var dn=0,tf=0;
+  WS_TOPICS.forEach(function(it){
+    var fs=wsMap[it.id]||[];
+    var has=fs.length>0;
+    var prog=wsUploadProgress[it.id];
+    if(has)dn++;
+    tf+=fs.length;
+    h+='<div class="tc"><div class="th"><div class="tn">'+it.num+'</div><div class="tb"><div class="tt" style="font-weight:700">'+it.title+'</div><div class="tm">';
+    if(has){
+      var vc=0,ic=0;
+      fs.forEach(function(f){f.isVideo?vc++:ic++});
+      var parts=[];
+      if(ic)parts.push(ic+' รูป');
+      if(vc)parts.push(vc+' วิดีโอ');
+      h+='<span class="bd bd-ok">✓ '+parts.join(' · ')+'</span>';
+    }else{
+      h+='<span class="bd bd-no">ยังไม่มีไฟล์</span>';
+    }
+    h+='</div></div></div>';
+    // Script text
+    h+='<div class="ws-script"><div class="ws-script-inner"><div class="ws-script-text">'+it.script+'</div></div></div>';
+    // Image hints
+    if(it.hints&&it.hints.length){
+      h+='<div class="hints">';
+      it.hints.forEach(function(n){h+='<span class="hint">📷 '+n+'</span>';});
+      h+='</div>';
+    }
+    // Gallery
+    if(has){
+      h+='<div class="gl">';
+      fs.forEach(function(f,i){
+        h+='<div class="gi" onclick="openM(\'ws\',\''+it.id+'\','+i+')">';
+        if(f.isVideo){h+='<img src="'+f.thumbnail+'" onerror="this.style.background=\'#1a2836\'" />';h+='<div class="vi-badge">▶ VDO</div>';}
+        else{h+='<img src="'+f.thumbnail+'" loading="lazy" />';}
+        if(f.sizeText)h+='<div class="fi-size">'+f.sizeText+'</div>';
+        h+='<div class="go"><button class="ov-v" onclick="event.stopPropagation();openM(\'ws\',\''+it.id+'\','+i+')">👁</button>';
+        h+='<button class="ov-d" onclick="event.stopPropagation();doDelWs(\''+it.id+'\','+i+')">✕</button></div></div>';
+      });
+      h+='</div>';
+    }
+    // Progress
+    if(prog){
+      var pgLabel=prog.chunkMode
+        ? 'กำลังอัปโหลดวิดีโอขนาดใหญ่... ('+prog.percent+'%)'
+        : 'กำลังอัปโหลด '+prog.current+'/'+prog.total+' ('+prog.percent+'%)';
+      h+='<div class="pg-wrap"><div class="pg-bar"><div class="pg-fill" style="width:'+prog.percent+'%"></div></div>';
+      h+='<div class="pg-text">'+pgLabel+'</div></div>';
+    }
+    // Upload buttons
+    h+='<div class="ur">';
+    h+='<label class="ul">📷 '+(has?'เพิ่มรูป':'เลือกรูป')+'<input type="file" accept="image/*" multiple style="display:none" onchange="doWsUp(this,\''+it.id+'\')" /></label>';
+    h+='<label class="ul">🎬 '+(has?'เพิ่มวิดีโอ':'เลือกวิดีโอ')+'<input type="file" accept="video/*,video/mp4,video/quicktime,video/3gpp,video/x-matroska" multiple style="display:none" onchange="doWsUp(this,\''+it.id+'\')" /></label>';
+    h+='</div></div>';
+  });
+  document.getElementById('wsList').innerHTML=h;
+  document.getElementById('wsST').textContent=WS_TOPICS.length;
+  document.getElementById('wsSD').textContent=dn;
+  document.getElementById('wsSF').textContent=tf;
+  document.getElementById('wsSR').textContent=WS_TOPICS.length-dn;
+  document.getElementById('wsBtnZ').disabled=tf===0;
+}
+
+// ===================== SHARED UPLOAD HELPERS =====================
+var CHUNK_BYTES = 5 * 1024 * 1024; // 5 MB per chunk (multiple of 256 KB per Drive API spec)
+var LARGE_FILE_THRESHOLD = 20 * 1024 * 1024; // files > 20 MB use chunked path
+
+// Extension → safe MIME type map for phone-captured videos.
+// Fixes: (1) file.type="" on Android Chrome 14/15, (2) video/quicktime MOV files,
+// (3) .hevc/.heic files that browsers mis-report.
+var EXT_MIME = {
+  'mp4':  'video/mp4',
+  'm4v':  'video/mp4',
+  'mov':  'video/mp4',   // QuickTime container — normalize to mp4 for Drive compatibility
+  'qt':   'video/mp4',
+  'hevc': 'video/mp4',
+  '3gp':  'video/3gpp',
+  '3g2':  'video/3gpp2',
+  'webm': 'video/webm',
+  'mkv':  'video/x-matroska',
+  'avi':  'video/x-msvideo',
+  'wmv':  'video/x-ms-wmv',
+  'flv':  'video/x-flv',
+  // images
+  'jpg':  'image/jpeg',
+  'jpeg': 'image/jpeg',
+  'png':  'image/png',
+  'gif':  'image/gif',
+  'webp': 'image/webp',
+  'heic': 'image/heic',
+  'heif': 'image/heif',
+  'bmp':  'image/bmp',
+  'tif':  'image/tiff',
+  'tiff': 'image/tiff',
+};
+
+// Resolve the true MIME type from file.type + filename extension.
+// Handles empty file.type (Android bug), video/quicktime (MOV), etc.
+function resolveMime(file) {
+  var ext = file.name.split('.').pop().toLowerCase();
+  // 1. If browser gave us a usable type that isn't a known problem, use it
+  var t = file.type || '';
+  // video/quicktime = MOV — normalize to mp4 so Drive processes it correctly
+  if (t === 'video/quicktime' || t === 'video/mov') t = 'video/mp4';
+  // If type is empty or generic, look up by extension
+  if (!t || t === 'application/octet-stream') {
+    t = EXT_MIME[ext] || 'application/octet-stream';
+  }
+  return t;
+}
+
+// อัปโหลดไฟล์เดียว — เลือกเส้นทางตามขนาด
+function uploadOneFile(file, extraFields, onDone, onFail, onProgress) {
+  var mime = resolveMime(file);
+  if (file.size > LARGE_FILE_THRESHOLD) {
+    uploadOneFileChunked(file, mime, extraFields, onDone, onFail, onProgress);
+  } else {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      // Replace whatever MIME the browser put in the data URL with the resolved one
+      var dataUrl = e.target.result.replace(/^data:[^;]+/, 'data:' + mime);
+      var fd = Object.assign({fileName:file.name, mimeType:mime, dataUrl:dataUrl}, extraFields);
+      var fn = extraFields.sectionId ? 'uploadWsFile' : 'uploadFile';
+      google.script.run
+        .withSuccessHandler(function(r){ if(r&&r.success) onDone(r); else onFail(r&&r.error); })
+        .withFailureHandler(function(e){ onFail(e); })
+        [fn](fd);
+    };
+    reader.onerror = function(){ onFail('FileReader error'); };
+    reader.readAsDataURL(file);
+  }
+}
+
+// อัปโหลดแบบ chunked สำหรับไฟล์ใหญ่ (ใช้ DriveApp ล้วน ไม่ต้องการ UrlFetchApp)
+function uploadOneFileChunked(file, mime, extraFields, onDone, onFail, onProgress) {
+  var startData = Object.assign({fileName:file.name, mimeType:mime}, extraFields);
+  google.script.run
+    .withSuccessHandler(function(init) {
+      if (!init || !init.success) { onFail(init&&init.error); return; }
+      sendNextChunk(file, mime, init.sessionId, 0, onDone, onFail, onProgress);
+    })
+    .withFailureHandler(function(e){ onFail(e); })
+    .startChunkedUpload(startData);
+}
+
+function sendNextChunk(file, mime, sessionId, offset, onDone, onFail, onProgress) {
+  var end = Math.min(offset + CHUNK_BYTES, file.size);
+  var slice = file.slice(offset, end);
+  var isLast = (end >= file.size);
+  var chunkIndex = Math.floor(offset / CHUNK_BYTES);
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var raw = e.target.result;
+    var b64 = raw.indexOf(',') !== -1 ? raw.split(',')[1] : raw;
+    var data = {
+      sessionId: sessionId,
+      chunk: b64,
+      chunkIndex: chunkIndex,
+      mimeType: mime,
+      isLast: isLast
+    };
+    google.script.run
+      .withSuccessHandler(function(r) {
+        if (!r || !r.success) { onFail(r&&r.error); return; }
+        if (onProgress) onProgress(end, file.size);
+        if (r.complete) {
+          onDone(r);
+        } else {
+          sendNextChunk(file, mime, sessionId, end, onDone, onFail, onProgress);
+        }
+      })
+      .withFailureHandler(function(e){ onFail(e); })
+      .uploadChunk(data);
+  };
+  reader.onerror = function(){ onFail('FileReader chunk error at offset ' + offset); };
+  reader.readAsDataURL(slice);
+}
+
+// ===================== VTR UPLOAD =====================
 function doUp(input,tid,type){
   var files=Array.from(input.files);
   if(!files.length)return;
@@ -268,37 +598,77 @@ function doUp(input,tid,type){
   uploadProgress[tid]={current:0,total:total,percent:0};
   render();
   toast('อัปโหลด '+total+' ไฟล์...','success');
-
   files.forEach(function(file){
-    var reader=new FileReader();
-    reader.onload=function(e){
-      var fd={fileName:file.name,mimeType:file.type,dataUrl:e.target.result,topicId:tid};
-      google.script.run
-        .withSuccessHandler(function(r){
-          done++;
-          uploadProgress[tid]={current:done,total:total,percent:Math.round(done/total*100)};
-          if(r.success){
-            if(!uMap[tid])uMap[tid]=[];
-            uMap[tid].push({fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:''});
-          }
-          if(done===total){delete uploadProgress[tid];toast('อัปโหลดเสร็จ','success');}
-          render();
-        })
-        .withFailureHandler(function(){
-          done++;
-          uploadProgress[tid]={current:done,total:total,percent:Math.round(done/total*100)};
-          if(done===total){delete uploadProgress[tid];toast('บางไฟล์อัปโหลดไม่สำเร็จ','error');}
-          render();
-        })
-        .uploadFile(fd);
-    };
-    reader.readAsDataURL(file);
+    uploadOneFile(
+      file,
+      {topicId:tid},
+      function(r){
+        done++;
+        if(!uMap[tid])uMap[tid]=[];
+        uMap[tid].push({fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:r.sizeText||''});
+        uploadProgress[tid]={current:done,total:total,percent:Math.round(done/total*100)};
+        if(done===total){delete uploadProgress[tid];toast('อัปโหลดเสร็จ','success');}
+        render();
+      },
+      function(err){
+        done++;
+        uploadProgress[tid]={current:done,total:total,percent:Math.round(done/total*100)};
+        var msg='อัปโหลดไม่สำเร็จ: '+(err?String(err).substring(0,120):'unknown');
+        if(done===total){delete uploadProgress[tid];}
+        toast(msg,'error');
+        console.error('[VTR upload error]',err);
+        render();
+      },
+      function(sent,total_bytes){
+        // แสดง progress ของ chunk upload (ไฟล์ใหญ่)
+        uploadProgress[tid]={current:done,total:total,percent:Math.round(sent/total_bytes*100),chunkMode:true};
+        render();
+      }
+    );
   });
   input.value='';
 }
 
-// Delete
-function doDel(tid,idx){
+// ===================== WHITE SCHOOL UPLOAD =====================
+function doWsUp(input,sid){
+  var files=Array.from(input.files);
+  if(!files.length)return;
+  var total=files.length,done=0;
+  wsUploadProgress[sid]={current:0,total:total,percent:0};
+  renderWs();
+  toast('อัปโหลด '+total+' ไฟล์...','success');
+  files.forEach(function(file){
+    uploadOneFile(
+      file,
+      {sectionId:sid},
+      function(r){
+        done++;
+        if(!wsMap[sid])wsMap[sid]=[];
+        wsMap[sid].push({fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:r.sizeText||''});
+        wsUploadProgress[sid]={current:done,total:total,percent:Math.round(done/total*100)};
+        if(done===total){delete wsUploadProgress[sid];toast('อัปโหลดเสร็จ','success');}
+        renderWs();
+      },
+      function(err){
+        done++;
+        wsUploadProgress[sid]={current:done,total:total,percent:Math.round(done/total*100)};
+        var msg='อัปโหลดไม่สำเร็จ: '+(err?String(err).substring(0,120):'unknown');
+        if(done===total){delete wsUploadProgress[sid];}
+        toast(msg,'error');
+        console.error('[WS upload error]',err);
+        renderWs();
+      },
+      function(sent,total_bytes){
+        wsUploadProgress[sid]={current:done,total:total,percent:Math.round(sent/total_bytes*100),chunkMode:true};
+        renderWs();
+      }
+    );
+  });
+  input.value='';
+}
+
+// ===================== DELETE =====================
+function doDelVtr(tid,idx){
   var fs=uMap[tid];if(!fs||!fs[idx])return;
   if(!confirm('ลบไฟล์นี้?'))return;
   var fid=fs[idx].fileId;
@@ -312,30 +682,34 @@ function doDel(tid,idx){
     .deleteFile(fid);
 }
 
-// Modal
-function openM(tid,idx){
-  var fs=uMap[tid];if(!fs||!fs[idx])return;
-  var f=fs[idx];
-  curP={topicId:tid,idx:idx,fileId:f.fileId,fileName:f.fileName,isVideo:f.isVideo};
+function doDelWs(sid,idx){
+  var fs=wsMap[sid];if(!fs||!fs[idx])return;
+  if(!confirm('ลบไฟล์นี้?'))return;
+  var fid=fs[idx].fileId;
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(r.success){wsMap[sid].splice(idx,1);if(curP&&curP.fileId===fid)closeM();toast('ลบสำเร็จ','success');}
+      else toast('ลบล้มเหลว','error');
+      renderWs();
+    })
+    .withFailureHandler(function(){toast('เกิดข้อผิดพลาด','error')})
+    .deleteFile(fid);
+}
 
+// ===================== MODAL =====================
+function openM(mode,id,idx){
+  var map=mode==='ws'?wsMap:uMap;
+  var fs=map[id];if(!fs||!fs[idx])return;
+  var f=fs[idx];
+  curP={mode:mode,id:id,idx:idx,fileId:f.fileId,fileName:f.fileName,isVideo:f.isVideo};
   var imgEl=document.getElementById('mImg');
   var vidEl=document.getElementById('mVid');
-
-  if(f.isVideo){
-    imgEl.classList.add('hidden');
-    vidEl.classList.remove('hidden');
-    vidEl.src=f.previewUrl||'';
-  }else{
-    vidEl.classList.add('hidden');
-    vidEl.src='';
-    imgEl.classList.remove('hidden');
-    imgEl.src=f.thumbnail.replace('sz=w400','sz=w1600');
-  }
-
+  if(f.isVideo){imgEl.classList.add('hidden');vidEl.classList.remove('hidden');vidEl.src=f.previewUrl||'';}
+  else{vidEl.classList.add('hidden');vidEl.src='';imgEl.classList.remove('hidden');imgEl.src=f.thumbnail.replace('sz=w400','sz=w1600');}
   document.getElementById('mNm').textContent=f.fileName;
   document.getElementById('mSz').textContent=f.sizeText||'';
-  document.getElementById('mDl').onclick=function(){doDel(tid,idx)};
-  document.getElementById('repIn').onchange=function(){doReplace(this)};
+  document.getElementById('mDl').onclick=function(){mode==='ws'?doDelWs(id,idx):doDelVtr(id,idx);};
+  document.getElementById('repIn').onchange=function(){doReplace(this);};
   document.getElementById('modal').classList.remove('hidden');
 }
 function closeM(e){
@@ -345,31 +719,39 @@ function closeM(e){
   curP=null;
 }
 
-// Replace
+// ===================== REPLACE =====================
 function doReplace(input){
   var file=input.files[0];if(!file||!curP)return;
   var cp=curP;
   toast('กำลังเปลี่ยนไฟล์...','success');
-  var reader=new FileReader();
-  reader.onload=function(e){
-    google.script.run
-      .withSuccessHandler(function(r){
-        if(r.success){
-          var fs=uMap[cp.topicId];
-          if(fs&&fs[cp.idx])fs[cp.idx]={fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:''};
+  var isWs=cp.mode==='ws';
+  var extraFields={oldFileId:cp.fileId};
+  if(isWs) extraFields.sectionId=cp.id; else extraFields.topicId=cp.id;
+
+  // ลบไฟล์เก่าก่อน แล้วอัปโหลดไฟล์ใหม่ (รองรับไฟล์ใหญ่)
+  google.script.run
+    .withSuccessHandler(function(){
+      uploadOneFile(
+        file,
+        extraFields,
+        function(r){
+          var map=isWs?wsMap:uMap;
+          var fs=map[cp.id];
+          if(fs&&fs[cp.idx])fs[cp.idx]={fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:r.sizeText||''};
           curP.fileId=r.fileId;curP.fileName=r.fileName;curP.isVideo=r.isVideo;
-          openM(cp.topicId,cp.idx);
-          render();toast('เปลี่ยนสำเร็จ','success');
-        }else toast('ล้มเหลว','error');
-      })
-      .withFailureHandler(function(){toast('เกิดข้อผิดพลาด','error')})
-      .replaceFile({fileName:file.name,mimeType:file.type,dataUrl:e.target.result,topicId:cp.topicId,oldFileId:cp.fileId});
-  };
-  reader.readAsDataURL(file);
+          openM(cp.mode,cp.id,cp.idx);
+          isWs?renderWs():render();
+          toast('เปลี่ยนสำเร็จ','success');
+        },
+        function(){toast('อัปโหลดไฟล์ใหม่ล้มเหลว','error');}
+      );
+    })
+    .withFailureHandler(function(){toast('เกิดข้อผิดพลาด','error')})
+    .deleteFile(cp.fileId);
   input.value='';
 }
 
-// Refresh
+// ===================== REFRESH =====================
 function doRefresh(){
   showOv('กำลังโหลดข้อมูล...');
   google.script.run
@@ -386,20 +768,40 @@ function doRefresh(){
     .getUploadedFiles();
 }
 
-// ZIP
+function doWsRefresh(){
+  showOv('กำลังโหลดข้อมูลสีขาว...');
+  google.script.run
+    .withSuccessHandler(function(files){
+      wsMap={};
+      files.forEach(function(f){
+        var sid=f.sectionId;if(!sid)return;
+        if(!wsMap[sid])wsMap[sid]=[];
+        wsMap[sid].push({fileId:f.id,fileName:f.name,isVideo:f.isVideo,mimeType:f.mimeType,thumbnail:f.thumbnail,previewUrl:f.previewUrl,sizeText:f.sizeText||''});
+      });
+      renderWs();hideOv();
+    })
+    .withFailureHandler(function(){hideOv();toast('โหลดข้อมูลล้มเหลว','error')})
+    .getWsFiles();
+}
+
+// ===================== ZIP =====================
 function doZip(){
   showOv('กำลังสร้าง ZIP...');
   google.script.run
-    .withSuccessHandler(function(r){
-      hideOv();
-      if(r.success){toast('สร้าง ZIP สำเร็จ!','success');window.open(r.downloadUrl,'_blank')}
-      else toast('ล้มเหลว: '+r.error,'error');
-    })
+    .withSuccessHandler(function(r){hideOv();if(r.success){toast('สร้าง ZIP สำเร็จ!','success');window.open(r.downloadUrl,'_blank')}else toast('ล้มเหลว: '+r.error,'error');})
     .withFailureHandler(function(){hideOv();toast('เกิดข้อผิดพลาด','error')})
     .createZip();
 }
 
-// Utils
+function doWsZip(){
+  showOv('กำลังสร้าง ZIP...');
+  google.script.run
+    .withSuccessHandler(function(r){hideOv();if(r.success){toast('สร้าง ZIP สำเร็จ!','success');window.open(r.downloadUrl,'_blank')}else toast('ล้มเหลว: '+r.error,'error');})
+    .withFailureHandler(function(){hideOv();toast('เกิดข้อผิดพลาด','error')})
+    .createWsZip();
+}
+
+// ===================== UTILS =====================
 function toast(m,t){var el=document.getElementById('toast');el.textContent=m;el.className='toast toast-'+t+' show';clearTimeout(window._tt);window._tt=setTimeout(function(){el.className='toast'},3000)}
 function showOv(t){document.getElementById('ovT').textContent=t;document.getElementById('ov').classList.remove('hidden')}
 function hideOv(){document.getElementById('ov').classList.add('hidden')}

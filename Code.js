@@ -71,7 +71,7 @@ function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('VTR Image & Video Uploader')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover');
 }
 
 // ===== Init Folders =====
@@ -161,73 +161,110 @@ function uploadFile(formData) {
 }
 
 // ===== Chunked Upload (ไฟล์ใหญ่) =====
-// เริ่มต้น: สร้างไฟล์เปล่า แล้ว return fileId
+// ใช้ DriveApp ล้วน — ไม่ใช้ UrlFetchApp เพื่อรองรับ ANYONE_ANONYMOUS web app
+//
+// วิธีการ:
+//   startChunkedUpload → สร้าง temp folder ใน Drive, return sessionId + fileName
+//   uploadChunk        → บันทึกแต่ละ chunk เป็นไฟล์เล็กๆ ใน temp folder
+//                        chunk สุดท้าย: รวมทุก chunk → สร้างไฟล์จริง → ลบ temp folder
+
+var TEMP_FOLDER_NAME = '_upload_tmp_';
+
+function getTempFolder() {
+  var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  var iter = root.getFoldersByName(TEMP_FOLDER_NAME);
+  return iter.hasNext() ? iter.next() : root.createFolder(TEMP_FOLDER_NAME);
+}
+
 function startChunkedUpload(formData) {
   try {
-    var folder = getTopicFolder(formData.topicId);
     var ext = formData.fileName.split('.').pop();
     var timestamp = new Date().getTime();
-    var newFileName = formData.topicId + '_' + timestamp + '.' + ext;
+    var idKey = formData.topicId || formData.sectionId || 'file';
+    var newFileName = idKey + '_' + timestamp + '.' + ext;
 
-    // สร้างไฟล์เปล่าเพื่อจอง
-    var placeholder = Utilities.newBlob('', formData.mimeType, newFileName);
-    var file = folder.createFile(placeholder);
+    // สร้าง session folder ใน temp เพื่อเก็บ chunks
+    var sessionId = idKey + '_' + timestamp;
+    var tmpFolder = getTempFolder();
+    tmpFolder.createFolder(sessionId);
 
-    return {
-      success: true,
-      fileId: file.getId(),
-      fileName: newFileName
-    };
+    // เก็บ metadata ใน PropertiesService
+    var props = PropertiesService.getScriptProperties();
+    props.setProperty('session_' + sessionId, JSON.stringify({
+      fileName: newFileName,
+      mimeType: formData.mimeType,
+      topicId: formData.topicId || '',
+      sectionId: formData.sectionId || '',
+      totalChunks: 0
+    }));
+
+    return { success: true, sessionId: sessionId, fileName: newFileName };
   } catch (e) {
     return { success: false, error: e.toString() };
   }
 }
 
-// อัปโหลดทีละ chunk แล้วต่อท้ายไฟล์
+// data: { sessionId, chunk (base64), chunkIndex, isLast, mimeType }
 function uploadChunk(data) {
   try {
+    var props = PropertiesService.getScriptProperties();
+    var metaKey = 'session_' + data.sessionId;
+    var meta = JSON.parse(props.getProperty(metaKey));
+    if (!meta) return { success: false, error: 'Session not found: ' + data.sessionId };
+
+    // บันทึก chunk ลงใน temp folder ของ session นี้
+    var tmpFolder = getTempFolder();
+    var iter = tmpFolder.getFoldersByName(data.sessionId);
+    if (!iter.hasNext()) return { success: false, error: 'Session folder missing' };
+    var sessionFolder = iter.next();
+
     var decoded = Utilities.base64Decode(data.chunk);
-    var existingFile = DriveApp.getFileById(data.fileId);
+    var chunkBlob = Utilities.newBlob(decoded, 'application/octet-stream', 'chunk_' + String(data.chunkIndex).padStart(6, '0'));
+    sessionFolder.createFile(chunkBlob);
 
-    if (data.chunkIndex === 0) {
-      // chunk แรก: เขียนทับไฟล์เปล่า
-      var blob = Utilities.newBlob(decoded, data.mimeType, existingFile.getName());
-      
-      // ใช้ Drive API advanced service เพื่ออัปเดตเนื้อหา
-      Drive.Files.update({}, data.fileId, blob);
-    } else {
-      // chunk ถัดไป: ดึงเนื้อหาเก่ามาต่อ
-      var existingBlob = existingFile.getBlob();
-      var existingBytes = existingBlob.getBytes();
-      
-      // ต่อ bytes
-      var combined = [];
-      for (var i = 0; i < existingBytes.length; i++) combined.push(existingBytes[i]);
-      for (var j = 0; j < decoded.length; j++) combined.push(decoded[j]);
-      
-      var newBlob = Utilities.newBlob(combined, data.mimeType, existingFile.getName());
-      Drive.Files.update({}, data.fileId, newBlob);
+    // อัปเดต totalChunks
+    meta.totalChunks = Math.max(meta.totalChunks, data.chunkIndex + 1);
+    props.setProperty(metaKey, JSON.stringify(meta));
+
+    if (!data.isLast) {
+      return { success: true, complete: false };
     }
 
-    // ถ้าเป็น chunk สุดท้าย return ข้อมูลครบ
-    if (data.isLast) {
-      var fileId = data.fileId;
-      var isVideo = data.mimeType.indexOf('video') === 0;
-      return {
-        success: true,
-        complete: true,
-        fileId: fileId,
-        fileName: existingFile.getName(),
-        isVideo: isVideo,
-        mimeType: data.mimeType,
-        thumbnail: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400',
-        previewUrl: isVideo
-          ? 'https://drive.google.com/file/d/' + fileId + '/preview'
-          : null
-      };
+    // --- chunk สุดท้าย: รวมทุก chunk แล้วสร้างไฟล์จริง ---
+    // เรียง chunks ตามชื่อ
+    var chunkFiles = [];
+    var allFiles = sessionFolder.getFiles();
+    while (allFiles.hasNext()) chunkFiles.push(allFiles.next());
+    chunkFiles.sort(function(a, b) { return a.getName() < b.getName() ? -1 : 1; });
+
+    // รวม bytes ทีละ chunk (ไม่ download ทั้งหมดพร้อมกัน)
+    var allBytes = [];
+    for (var i = 0; i < chunkFiles.length; i++) {
+      var bytes = chunkFiles[i].getBlob().getBytes();
+      for (var j = 0; j < bytes.length; j++) allBytes.push(bytes[j]);
     }
 
-    return { success: true, complete: false };
+    // สร้างไฟล์จริงในโฟลเดอร์ปลายทาง
+    var destFolder = meta.sectionId ? getWsFolder(meta.sectionId) : getTopicFolder(meta.topicId);
+    var finalBlob = Utilities.newBlob(allBytes, meta.mimeType, meta.fileName);
+    var file = destFolder.createFile(finalBlob);
+    var fileId = file.getId();
+
+    // ลบ temp session folder และ property
+    sessionFolder.setTrashed(true);
+    props.deleteProperty(metaKey);
+
+    var isVideo = meta.mimeType.indexOf('video') === 0;
+    return {
+      success: true,
+      complete: true,
+      fileId: fileId,
+      fileName: meta.fileName,
+      isVideo: isVideo,
+      mimeType: meta.mimeType,
+      thumbnail: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400',
+      previewUrl: isVideo ? 'https://drive.google.com/file/d/' + fileId + '/preview' : null
+    };
   } catch (e) {
     return { success: false, error: e.toString() };
   }
@@ -324,6 +361,126 @@ function createZip() {
       success: true,
       downloadUrl: 'https://drive.google.com/uc?export=download&id=' + zipFile.getId()
     };
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
+// ===== White School Folder Structure =====
+var WS_ROOT_NAME = 'สถานศึกษาสีขาว';
+var WS_FOLDERS = {
+  'ws-01': '01_บทนำ',
+  'ws-02': '02_มาตรการที่1_ป้องกัน',
+  'ws-03': '03_มาตรการที่2_ค้นหา',
+  'ws-04': '04_มาตรการที่3_รักษา',
+  'ws-05': '05_มาตรการที่4_เฝ้าระวัง',
+  'ws-06': '06_มาตรการที่5_บริหารจัดการ',
+  'ws-07': '07_WISE2_Model',
+  'ws-08': '08_PDCA_Plan',
+  'ws-09': '09_PDCA_Do',
+  'ws-10': '10_PDCA_Check',
+  'ws-11': '11_PDCA_Act',
+  'ws-12': '12_บทสรุป'
+};
+
+function getWsRoot() {
+  var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  return getOrCreateFolder(root, WS_ROOT_NAME);
+}
+
+function getWsFolder(sectionId) {
+  var name = WS_FOLDERS[sectionId];
+  if (!name) return getWsRoot();
+  return getOrCreateFolder(getWsRoot(), name);
+}
+
+function uploadWsFile(formData) {
+  try {
+    var folder = getWsFolder(formData.sectionId);
+    var base64 = formData.dataUrl.split(',')[1];
+    var decoded = Utilities.base64Decode(base64);
+    var blob = Utilities.newBlob(decoded, formData.mimeType, formData.fileName);
+    var ext = formData.fileName.split('.').pop();
+    var timestamp = new Date().getTime();
+    var newFileName = formData.sectionId + '_' + timestamp + '.' + ext;
+    blob.setName(newFileName);
+    var file = folder.createFile(blob);
+    var fileId = file.getId();
+    var isVideo = formData.mimeType.indexOf('video') === 0;
+    return {
+      success: true,
+      fileId: fileId,
+      fileName: newFileName,
+      isVideo: isVideo,
+      mimeType: formData.mimeType,
+      thumbnail: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400',
+      previewUrl: isVideo ? 'https://drive.google.com/file/d/' + fileId + '/preview' : null
+    };
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
+function replaceWsFile(formData) {
+  try {
+    if (formData.oldFileId) DriveApp.getFileById(formData.oldFileId).setTrashed(true);
+    return uploadWsFile(formData);
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
+function getWsFiles() {
+  try {
+    var wsRoot = getWsRoot();
+    // Build reverse map: folder name -> sectionId
+    var nameToId = {};
+    for (var key in WS_FOLDERS) nameToId[WS_FOLDERS[key]] = key;
+    var result = [];
+    var subs = wsRoot.getFolders();
+    while (subs.hasNext()) {
+      var sub = subs.next();
+      var sid = nameToId[sub.getName()];
+      var files = sub.getFiles();
+      while (files.hasNext()) {
+        var file = files.next();
+        if (file.getName().endsWith('.zip')) continue;
+        var id = file.getId();
+        var mime = file.getMimeType();
+        var isVideo = mime.indexOf('video') === 0;
+        result.push({
+          name: file.getName(),
+          id: id,
+          sectionId: sid || '',
+          mimeType: mime,
+          isVideo: isVideo,
+          size: file.getSize(),
+          sizeText: formatSize(file.getSize()),
+          thumbnail: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400',
+          previewUrl: isVideo ? 'https://drive.google.com/file/d/' + id + '/preview' : null
+        });
+      }
+    }
+    result.sort(function(a, b) { return a.name.localeCompare(b.name); });
+    return result;
+  } catch (e) {
+    return [];
+  }
+}
+
+function createWsZip() {
+  try {
+    var wsRoot = getWsRoot();
+    var blobs = [];
+    collectBlobs(wsRoot, '', blobs);
+    if (blobs.length === 0) return { success: false, error: 'ไม่มีไฟล์' };
+    var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    var oldFiles = root.getFilesByName('WhiteSchool_Images.zip');
+    while (oldFiles.hasNext()) { oldFiles.next().setTrashed(true); }
+    var zipBlob = Utilities.zip(blobs, 'WhiteSchool_Images.zip');
+    var zipFile = root.createFile(zipBlob);
+    zipFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return { success: true, downloadUrl: 'https://drive.google.com/uc?export=download&id=' + zipFile.getId() };
   } catch (e) {
     return { success: false, error: e.toString() };
   }
