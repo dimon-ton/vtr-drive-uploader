@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#0c141c;--sf:#141e2a;--card:#1a2836;--card2:#1f3042;
+      --ac:#4fc3f7;--ac2:#81d4fa;--gn:#66bb6a;--or:#ffa726;--rd:#ef5350;
+      --tx:#dfe6ed;--dm:#607888;--bd:#24343f;
+    }
+    body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+
+    .hd{background:linear-gradient(160deg,#162636,#0e1c2c);border-bottom:1px solid var(--bd);padding:18px 16px;text-align:center;position:sticky;top:0;z-index:100}
+    .hd h1{font-size:18px;font-weight:700;color:var(--ac)}
+    .hd p{font-size:11px;color:var(--dm);margin-top:2px}
+
+    .st{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding:10px 16px;background:var(--sf);border-bottom:1px solid var(--bd);font-size:12px}
+    .st span{color:var(--ac);font-weight:700}
+
+    .act{display:flex;justify-content:center;gap:8px;padding:10px 16px;background:var(--sf);border-bottom:1px solid var(--bd)}
+    .btn{padding:8px 16px;border:none;border-radius:7px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+    .btn:disabled{opacity:.3;cursor:not-allowed}
+    .btn-p{background:var(--ac);color:#0c141c}
+    .btn-p:hover:not(:disabled){background:var(--ac2)}
+    .btn-g{background:transparent;color:var(--dm);border:1px solid var(--bd)}
+    .btn-g:hover{border-color:var(--ac);color:var(--ac)}
+
+    .oh{padding:16px;background:linear-gradient(135deg,rgba(79,195,247,.08),transparent);border-bottom:1px solid var(--bd)}
+    .ol{font-size:11px;font-weight:600;color:var(--ac);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+    .ot{font-size:15px;font-weight:700}
+
+    .dh{padding:10px 16px;font-size:13px;font-weight:600;color:var(--ac2);background:rgba(79,195,247,.03);border-bottom:1px solid var(--bd)}
+
+    .tc{padding:14px 16px;border-bottom:1px solid var(--bd);transition:background .1s}
+    .tc:hover{background:var(--card2)}
+    .th{display:flex;gap:10px;align-items:flex-start}
+    .tn{flex-shrink:0;min-width:36px;height:36px;border-radius:8px;background:rgba(79,195,247,.1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ac);border:1px solid rgba(79,195,247,.15);padding:0 6px}
+    .tb{flex:1;min-width:0}
+    .tt{font-size:13px;line-height:1.6}
+    .tm{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center}
+    .bd{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+    .bd-ok{background:rgba(102,187,106,.12);color:var(--gn)}
+    .bd-no{background:rgba(96,120,136,.12);color:var(--dm)}
+
+    /* Gallery */
+    .gl{display:flex;gap:6px;margin-top:10px;padding-left:46px;flex-wrap:wrap;align-items:flex-start}
+    .gi{position:relative;border-radius:7px;overflow:hidden;border:2px solid var(--bd);cursor:pointer;flex-shrink:0;transition:border-color .15s;width:80px;height:80px}
+    .gi:hover{border-color:var(--ac)}
+    .gi img,.gi video{width:100%;height:100%;object-fit:cover;display:block}
+    .gi .go{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;gap:4px;opacity:0;transition:opacity .15s}
+    .gi:hover .go{opacity:1}
+    .go button{width:26px;height:26px;border-radius:50%;border:none;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .ov-v{background:var(--ac);color:#0c141c}
+    .ov-d{background:var(--rd);color:#fff}
+    /* Video badge */
+    .vi-badge{position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,.7);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600;pointer-events:none}
+    /* File size */
+    .fi-size{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.7);color:var(--dm);font-size:8px;padding:1px 4px;border-radius:3px;pointer-events:none}
+
+    /* Upload */
+    .ur{margin-top:8px;padding-left:46px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .ul{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;border:1px dashed var(--bd);background:transparent;color:var(--dm);font-family:'Sarabun',sans-serif;font-size:11px;cursor:pointer;transition:all .15s}
+    .ul:hover{border-color:var(--ac);color:var(--ac)}
+
+    /* Progress bar */
+    .pg-wrap{width:100%;margin-top:6px;padding-left:46px}
+    .pg-bar{width:100%;height:6px;background:var(--bd);border-radius:3px;overflow:hidden}
+    .pg-fill{height:100%;background:var(--ac);border-radius:3px;transition:width .2s}
+    .pg-text{font-size:10px;color:var(--dm);margin-top:2px}
+
+    /* Modal */
+    .mb{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
+    .mx{position:relative;max-width:94vw;max-height:90vh;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--bd)}
+    .mx img{display:block;max-width:94vw;max-height:74vh;object-fit:contain}
+    .mx video{display:block;max-width:94vw;max-height:74vh;background:#000}
+    .mf{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--bd)}
+    .mn{font-size:11px;color:var(--dm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+    .ms{font-size:10px;color:var(--dm);margin-left:8px;white-space:nowrap}
+    .mc{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .btn-sm{padding:4px 10px;font-size:11px;border-radius:5px}
+    .btn-rs{padding:4px 10px;font-size:11px;border-radius:5px;background:transparent;color:var(--rd);border:1px solid rgba(239,83,80,.3);cursor:pointer}
+
+    .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(70px);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:999;transition:transform .25s ease;pointer-events:none;white-space:nowrap}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast-success{background:var(--gn);color:#0c141c}
+    .toast-error{background:var(--rd);color:#fff}
+
+    .ov{position:fixed;inset:0;background:rgba(12,20,28,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200}
+    .sp{width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .5s linear infinite}
+    .ov .sp{width:30px;height:30px;border-width:3px}
+    .ov p{margin-top:10px;font-size:13px;color:var(--dm)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .hidden{display:none!important}
+  </style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>📋 VTR Image & Video Uploader</h1>
+  <p>อัปโหลดรูปภาพและวิดีโอหลักฐาน · คุณภาพต้นฉบับ · ดาวน์โหลด ZIP</p>
+</div>
+
+<div class="st">
+  <div>หัวข้อทั้งหมด: <span id="sT">0</span></div>
+  <div>มีไฟล์แล้ว: <span id="sD">0</span></div>
+  <div>ไฟล์ทั้งหมด: <span id="sF">0</span></div>
+  <div>ยังไม่มี: <span id="sR">0</span></div>
+</div>
+
+<div class="act">
+  <button class="btn btn-p" id="btnZ" disabled onclick="doZip()">📦 ดาวน์โหลด ZIP</button>
+  <button class="btn btn-g" onclick="doRefresh()">🔄 รีเฟรช</button>
+</div>
+
+<div id="list"></div>
+
+<!-- Modal -->
+<div class="mb hidden" id="modal" onclick="closeM(event)">
+  <div class="mx">
+    <button class="mc" onclick="closeM()">✕</button>
+    <img id="mImg" class="hidden" />
+    <video id="mVid" class="hidden" controls></video>
+    <div class="mf">
+      <div class="mn" id="mNm"></div>
+      <div class="ms" id="mSz"></div>
+      <div style="display:flex;gap:6px">
+        <label class="btn btn-sm btn-g" style="cursor:pointer">🔄 เปลี่ยน<input type="file" accept="image/*,video/*" style="display:none" id="repIn" /></label>
+        <button class="btn-rs" id="mDl">🗑 ลบ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="ov hidden" id="ov"><div class="sp"></div><p id="ovT">กำลังดำเนินการ...</p></div>
+
+<script>
+var TOPICS=[
+  {org:"องค์ประกอบที่ 1",orgTitle:"การประเมินประสิทธิภาพและประสิทธิผลการปฏิบัติงานตามมาตรฐานตำแหน่ง",groups:[
+    {dan:"ด้านที่ 1 การจัดการเรียนรู้",items:[
+      {id:"1-1",num:"1.1",text:"นำผลการวิเคราะห์หลักสูตรมาจัดทำรายวิชาและหน่วยการเรียนรู้ให้สอดคล้องกับมาตรฐานการเรียนรู้และตัวชี้วัด ให้ผู้เรียนได้พัฒนาสมรรถนะและการเรียนรู้เต็มตามศักยภาพ"},
+      {id:"1-2",num:"1.2",text:"ปฏิบัติการสอน โดยออกแบบการจัดการเรียนรู้โดยเน้นผู้เรียนเป็นสำคัญ ให้ผู้เรียนมีความรู้ ทักษะ คุณลักษณะประจำวิชา คุณลักษณะอันพึงประสงค์ และสมรรถนะที่สำคัญตามหลักสูตร"},
+      {id:"1-3",num:"1.3",text:"จัดกิจกรรมการเรียนรู้ อำนวยความสะดวกในการจัดการเรียนรู้ และส่งเสริมผู้เรียนได้พัฒนาเต็มตามศักยภาพ เรียนรู้และทำงานร่วมกัน"},
+      {id:"1-4",num:"1.4",text:"เลือกและใช้สื่อ เทคโนโลยี และแหล่งเรียนรู้ที่สอดคล้องกับกิจกรรมการเรียนรู้ ให้ผู้เรียนมีทักษะการคิด"},
+      {id:"1-5",num:"1.5",text:"วัดและประเมินผลการเรียนรู้ด้วยวิธีการที่หลากหลาย เหมาะสม และสอดคล้องกับมาตรฐานการเรียนรู้ ให้ผู้เรียนพัฒนาการเรียนรู้อย่างต่อเนื่อง"},
+      {id:"1-6",num:"1.6",text:"จัดบรรยากาศที่ส่งเสริมและพัฒนาผู้เรียนให้เกิดกระบวนการคิด ทักษะชีวิต ทักษะการทำงาน ทักษะการเรียนรู้และนวัตกรรม ทักษะด้านสารสนเทศ สื่อ และเทคโนโลยี"},
+      {id:"1-7",num:"1.7",text:"อบรมบ่มนิสัยให้ผู้เรียนมีคุณธรรม จริยธรรม คุณลักษณะอันพึงประสงค์ และค่านิยมความเป็นไทยที่ดีงาม"}
+    ]},
+    {dan:"ด้านที่ 2 การส่งเสริมและสนับสนุนการจัดการเรียนรู้",items:[
+      {id:"2-1",num:"2.1",text:"จัดทำข้อมูลสารสนเทศของผู้เรียนเพื่อใช้ในการส่งเสริมสนับสนุนการเรียนรู้และพัฒนาคุณภาพผู้เรียน"},
+      {id:"2-2",num:"2.2",text:"ดำเนินการตามระบบดูแลช่วยเหลือนักเรียน โดยใช้ข้อมูลสารสนเทศเกี่ยวกับผู้เรียนรายบุคคล และประสานความช่วยเหลือกับผู้มีส่วนเกี่ยวข้อง เพื่อพัฒนาและแก้ปัญหาผู้เรียน"},
+      {id:"2-3",num:"2.3",text:"ร่วมปฏิบัติงานทางวิชาการและงานอื่นๆ ของสถานศึกษา เพื่อยกระดับคุณภาพการจัดการศึกษาของสถานศึกษา"},
+      {id:"2-4",num:"2.4",text:"ประสานความร่วมมือกับผู้ปกครองหรือผู้เกี่ยวข้อง เพื่อร่วมพัฒนาผู้เรียน"}
+    ]},
+    {dan:"ด้านที่ 3 การพัฒนาตนเองและวิชาชีพ",items:[
+      {id:"3-1",num:"3.1",text:"พัฒนาตนเองอย่างเป็นระบบและต่อเนื่อง เพื่อให้มีความรู้ความสามารถ ทักษะ โดยเฉพาะอย่างยิ่งการใช้ภาษาไทยและภาษาอังกฤษเพื่อการสื่อสาร และการใช้เทคโนโลยีเพื่อการศึกษา"},
+      {id:"3-2",num:"3.2",text:"มีส่วนร่วมในการแลกเปลี่ยนเรียนรู้ทางวิชาชีพ เพื่อการพัฒนาการจัดการเรียนรู้"},
+      {id:"3-3",num:"3.3",text:"นำความรู้ ความสามารถ ทักษะที่ได้จากการพัฒนาตนเองและวิชาชีพมาใช้ในการพัฒนาการจัดการเรียนรู้ และการพัฒนาคุณภาพผู้เรียน"}
+    ]}
+  ]},
+  {org:"องค์ประกอบที่ 2",orgTitle:"การประเมินการมีส่วนร่วมในการพัฒนาการศึกษา",groups:[
+    {dan:null,items:[
+      {id:"org2",num:"—",text:"ความสำเร็จของงานที่ได้รับมอบหมายจากผู้บังคับบัญชา"}
+    ]}
+  ]},
+  {org:"องค์ประกอบที่ 3",orgTitle:"การประเมินการปฏิบัติตนในการรักษาวินัย คุณธรรม จริยธรรม และจรรยาบรรณวิชาชีพ",groups:[
+    {dan:null,items:[
+      {id:"v-1",num:"3.1",text:"ยึดมั่นในสถาบันหลักของประเทศ อันได้แก่ ชาติ ศาสนา พระมหากษัตริย์ และการปกครองระบอบประชาธิปไตยอันมีพระมหากษัตริย์ทรงเป็นประมุข"},
+      {id:"v-2",num:"3.2",text:"มีความซื่อสัตย์สุจริต มีจิตสำนึกที่ดี มีความรับผิดชอบต่อหน้าที่และต่อผู้เกี่ยวข้อง ในฐานะข้าราชการครูและบุคลากรทางการศึกษา"},
+      {id:"v-3",num:"3.3",text:"มีความกล้าคิด กล้าตัดสินใจ กล้าแสดงออก และกระทำในสิ่งที่ถูกต้อง ชอบธรรม"},
+      {id:"v-4",num:"3.4",text:"มีจิตอาสา จิตสาธารณะ มุ่งประโยชน์ส่วนรวม โดยไม่คำนึงถึงผลประโยชน์ส่วนตนหรือพวกพ้อง"},
+      {id:"v-5",num:"3.5",text:"มุ่งผลสัมฤทธิ์ของงาน มุ่งมั่นในการปฏิบัติงานอย่างเต็มกำลังความสามารถ โดยคำนึงถึงคุณภาพการศึกษาเป็นสำคัญ"},
+      {id:"v-6",num:"3.6",text:"ปฏิบัติหน้าที่อย่างเป็นธรรมและไม่เลือกปฏิบัติ"},
+      {id:"v-7",num:"3.7",text:"ดำรงตนเป็นแบบอย่างที่ดีและรักษาภาพลักษณ์ของข้าราชการครูและบุคลากรทางการศึกษา"},
+      {id:"v-8",num:"3.8",text:"เคารพศักดิ์ศรีความเป็นมนุษย์ คำนึงถึงสิทธิเด็ก และยอมรับความแตกต่างของบุคคล"},
+      {id:"v-9",num:"3.9",text:"ยึดถือและปฏิบัติตามจรรยาบรรณของวิชาชีพ"},
+      {id:"v-10",num:"3.10",text:"มีวินัยและรักษาวินัย"}
+    ]}
+  ]}
+];
+
+// State
+var uMap={}; // uMap[topicId] = [{ fileId, fileName, isVideo, mimeType, thumbnail, previewUrl, sizeText }, ...]
+var curP=null;
+var uploadProgress={}; // uploadProgress[topicId] = { current, total, percent }
+
+window.onload=function(){render();doRefresh()};
+
+function render(){
+  var h='',all=[];
+  TOPICS.forEach(function(o){
+    h+='<div class="oh"><div class="ol">'+o.org+'</div><div class="ot">'+o.orgTitle+'</div></div>';
+    o.groups.forEach(function(g){
+      if(g.dan)h+='<div class="dh">'+g.dan+'</div>';
+      g.items.forEach(function(it){
+        all.push(it);
+        var fs=uMap[it.id]||[];
+        var has=fs.length>0;
+        var prog=uploadProgress[it.id];
+
+        h+='<div class="tc"><div class="th"><div class="tn">'+it.num+'</div><div class="tb"><div class="tt">'+it.text+'</div><div class="tm">';
+        if(has){
+          var vc=0,ic=0;
+          fs.forEach(function(f){f.isVideo?vc++:ic++});
+          var parts=[];
+          if(ic)parts.push(ic+' รูป');
+          if(vc)parts.push(vc+' วิดีโอ');
+          h+='<span class="bd bd-ok">✓ '+parts.join(' · ')+'</span>';
+        }else{
+          h+='<span class="bd bd-no">ยังไม่มีไฟล์</span>';
+        }
+        h+='</div></div></div>';
+
+        // Gallery
+        if(has){
+          h+='<div class="gl">';
+          fs.forEach(function(f,i){
+            h+='<div class="gi" onclick="openM(\''+it.id+'\','+i+')">';
+            if(f.isVideo){
+              h+='<img src="'+f.thumbnail+'" onerror="this.style.background=\'#1a2836\'" />';
+              h+='<div class="vi-badge">▶ VDO</div>';
+            }else{
+              h+='<img src="'+f.thumbnail+'" loading="lazy" />';
+            }
+            if(f.sizeText)h+='<div class="fi-size">'+f.sizeText+'</div>';
+            h+='<div class="go">';
+            h+='<button class="ov-v" onclick="event.stopPropagation();openM(\''+it.id+'\','+i+')">👁</button>';
+            h+='<button class="ov-d" onclick="event.stopPropagation();doDel(\''+it.id+'\','+i+')">✕</button>';
+            h+='</div></div>';
+          });
+          h+='</div>';
+        }
+
+        // Progress bar
+        if(prog){
+          h+='<div class="pg-wrap"><div class="pg-bar"><div class="pg-fill" style="width:'+prog.percent+'%"></div></div>';
+          h+='<div class="pg-text">กำลังอัปโหลด '+prog.current+'/'+prog.total+' ('+prog.percent+'%)</div></div>';
+        }
+
+        // Upload buttons
+        h+='<div class="ur">';
+        h+='<label class="ul">📷 '+(has?'เพิ่มรูป':'เลือกรูป')+'<input type="file" accept="image/*" multiple style="display:none" onchange="doUp(this,\''+it.id+'\',\'image\')" /></label>';
+        h+='<label class="ul">🎬 '+(has?'เพิ่มวิดีโอ':'เลือกวิดีโอ')+'<input type="file" accept="video/*" multiple style="display:none" onchange="doUp(this,\''+it.id+'\',\'video\')" /></label>';
+        h+='</div></div>';
+      });
+    });
+  });
+  document.getElementById('list').innerHTML=h;
+
+  // Stats
+  var dn=0,tf=0;
+  all.forEach(function(it){var f=uMap[it.id]||[];if(f.length)dn++;tf+=f.length});
+  document.getElementById('sT').textContent=all.length;
+  document.getElementById('sD').textContent=dn;
+  document.getElementById('sF').textContent=tf;
+  document.getElementById('sR').textContent=all.length-dn;
+  document.getElementById('btnZ').disabled=tf===0;
+}
+
+// Upload
+function doUp(input,tid,type){
+  var files=Array.from(input.files);
+  if(!files.length)return;
+  var total=files.length,done=0;
+  uploadProgress[tid]={current:0,total:total,percent:0};
+  render();
+  toast('อัปโหลด '+total+' ไฟล์...','success');
+
+  files.forEach(function(file){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var fd={fileName:file.name,mimeType:file.type,dataUrl:e.target.result,topicId:tid};
+      google.script.run
+        .withSuccessHandler(function(r){
+          done++;
+          uploadProgress[tid]={current:done,total:total,percent:Math.round(done/total*100)};
+          if(r.success){
+            if(!uMap[tid])uMap[tid]=[];
+            uMap[tid].push({fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:''});
+          }
+          if(done===total){delete uploadProgress[tid];toast('อัปโหลดเสร็จ','success');}
+          render();
+        })
+        .withFailureHandler(function(){
+          done++;
+          uploadProgress[tid]={current:done,total:total,percent:Math.round(done/total*100)};
+          if(done===total){delete uploadProgress[tid];toast('บางไฟล์อัปโหลดไม่สำเร็จ','error');}
+          render();
+        })
+        .uploadFile(fd);
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+// Delete
+function doDel(tid,idx){
+  var fs=uMap[tid];if(!fs||!fs[idx])return;
+  if(!confirm('ลบไฟล์นี้?'))return;
+  var fid=fs[idx].fileId;
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(r.success){uMap[tid].splice(idx,1);if(curP&&curP.fileId===fid)closeM();toast('ลบสำเร็จ','success');}
+      else toast('ลบล้มเหลว','error');
+      render();
+    })
+    .withFailureHandler(function(){toast('เกิดข้อผิดพลาด','error')})
+    .deleteFile(fid);
+}
+
+// Modal
+function openM(tid,idx){
+  var fs=uMap[tid];if(!fs||!fs[idx])return;
+  var f=fs[idx];
+  curP={topicId:tid,idx:idx,fileId:f.fileId,fileName:f.fileName,isVideo:f.isVideo};
+
+  var imgEl=document.getElementById('mImg');
+  var vidEl=document.getElementById('mVid');
+
+  if(f.isVideo){
+    imgEl.classList.add('hidden');
+    vidEl.classList.remove('hidden');
+    vidEl.src=f.previewUrl||'';
+  }else{
+    vidEl.classList.add('hidden');
+    vidEl.src='';
+    imgEl.classList.remove('hidden');
+    imgEl.src=f.thumbnail.replace('sz=w400','sz=w1600');
+  }
+
+  document.getElementById('mNm').textContent=f.fileName;
+  document.getElementById('mSz').textContent=f.sizeText||'';
+  document.getElementById('mDl').onclick=function(){doDel(tid,idx)};
+  document.getElementById('repIn').onchange=function(){doReplace(this)};
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeM(e){
+  if(e&&e.target!==document.getElementById('modal'))return;
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('mVid').src='';
+  curP=null;
+}
+
+// Replace
+function doReplace(input){
+  var file=input.files[0];if(!file||!curP)return;
+  var cp=curP;
+  toast('กำลังเปลี่ยนไฟล์...','success');
+  var reader=new FileReader();
+  reader.onload=function(e){
+    google.script.run
+      .withSuccessHandler(function(r){
+        if(r.success){
+          var fs=uMap[cp.topicId];
+          if(fs&&fs[cp.idx])fs[cp.idx]={fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:''};
+          curP.fileId=r.fileId;curP.fileName=r.fileName;curP.isVideo=r.isVideo;
+          openM(cp.topicId,cp.idx);
+          render();toast('เปลี่ยนสำเร็จ','success');
+        }else toast('ล้มเหลว','error');
+      })
+      .withFailureHandler(function(){toast('เกิดข้อผิดพลาด','error')})
+      .replaceFile({fileName:file.name,mimeType:file.type,dataUrl:e.target.result,topicId:cp.topicId,oldFileId:cp.fileId});
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+// Refresh
+function doRefresh(){
+  showOv('กำลังโหลดข้อมูล...');
+  google.script.run
+    .withSuccessHandler(function(files){
+      uMap={};
+      files.forEach(function(f){
+        var tid=f.topicId;if(!tid)return;
+        if(!uMap[tid])uMap[tid]=[];
+        uMap[tid].push({fileId:f.id,fileName:f.name,isVideo:f.isVideo,mimeType:f.mimeType,thumbnail:f.thumbnail,previewUrl:f.previewUrl,sizeText:f.sizeText||''});
+      });
+      render();hideOv();
+    })
+    .withFailureHandler(function(){hideOv();toast('โหลดข้อมูลล้มเหลว','error')})
+    .getUploadedFiles();
+}
+
+// ZIP
+function doZip(){
+  showOv('กำลังสร้าง ZIP...');
+  google.script.run
+    .withSuccessHandler(function(r){
+      hideOv();
+      if(r.success){toast('สร้าง ZIP สำเร็จ!','success');window.open(r.downloadUrl,'_blank')}
+      else toast('ล้มเหลว: '+r.error,'error');
+    })
+    .withFailureHandler(function(){hideOv();toast('เกิดข้อผิดพลาด','error')})
+    .createZip();
+}
+
+// Utils
+function toast(m,t){var el=document.getElementById('toast');el.textContent=m;el.className='toast toast-'+t+' show';clearTimeout(window._tt);window._tt=setTimeout(function(){el.className='toast'},3000)}
+function showOv(t){document.getElementById('ovT').textContent=t;document.getElementById('ov').classList.remove('hidden')}
+function hideOv(){document.getElementById('ov').classList.add('hidden')}
+</script>
+</body>
+</html>
