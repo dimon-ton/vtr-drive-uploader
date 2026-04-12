@@ -133,9 +133,10 @@
       .gl { padding-left: 0; gap: 8px; margin-top: 10px; }
       .gi { width: 96px; height: 96px; border-radius: 10px; }
 
-      /* Always show overlay action buttons on touch (no hover) */
-      .gi .go { opacity: 1; background: rgba(0,0,0,.45); }
-      .go button { width: 36px; height: 36px; font-size: 14px; }
+      /* Touch phones — small delete badge in corner; image stays visible */
+      .gi .go { opacity: 1; background: none; align-items: flex-start; justify-content: flex-end; padding: 4px; }
+      .ov-v { display: none; }
+      .ov-d { width: 26px; height: 26px; font-size: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
 
       /* Upload buttons — bigger tap area */
       .ur { padding-left: 0; gap: 8px; margin-top: 10px; }
@@ -176,11 +177,21 @@
     }
 
     /* ===================== TABLET / iPAD ===================== */
-    /* Touch devices wider than phone (iPad) — always-visible overlay buttons */
+    /* On iPad, the whole thumbnail (.gi) is already tappable to open preview.
+       So we hide the redundant 👁 view button and show only a small delete
+       badge in the top-right corner — the image stays fully visible. */
     @media (min-width: 601px) and (hover: none) and (pointer: coarse) {
       .gi { width: 90px; height: 90px; }
-      .gi .go { opacity: 1; background: rgba(0,0,0,.45); }
-      .go button { width: 34px; height: 34px; font-size: 13px; }
+      .gi .go {
+        opacity: 1;
+        background: none;          /* no dark overlay — image fully visible */
+        align-items: flex-start;
+        justify-content: flex-end;
+        padding: 4px;
+      }
+      .ov-v { display: none; }     /* hide view btn — tap anywhere on image opens preview */
+      .ov-d { width: 24px; height: 24px; font-size: 11px;
+              box-shadow: 0 1px 4px rgba(0,0,0,.6); }
     }
   </style>
 </head>
