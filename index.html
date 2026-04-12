@@ -770,7 +770,16 @@ function openM(mode,id,idx){
   var imgEl=document.getElementById('mImg');
   var vidEl=document.getElementById('mVid');
   if(f.isVideo){imgEl.classList.add('hidden');vidEl.classList.remove('hidden');vidEl.src=f.previewUrl||'';}
-  else{vidEl.classList.add('hidden');vidEl.src='';imgEl.classList.remove('hidden');imgEl.src=f.thumbnail.replace('sz=w400','sz=w1600');}
+  else{
+    vidEl.classList.add('hidden');vidEl.src='';
+    imgEl.classList.remove('hidden');
+    // Use the real file URL so the full-resolution image is shown in the preview,
+    // not the low-quality thumbnail served by the /thumbnail endpoint.
+    imgEl.src='https://drive.google.com/uc?export=view&id='+f.fileId;
+    // Fallback: if the direct URL fails (e.g. large-file virus-scan redirect),
+    // fall back to a high-res thumbnail so something is always displayed.
+    imgEl.onerror=function(){imgEl.onerror=null;imgEl.src=f.thumbnail.replace('sz=w400','sz=w2000');};
+  }
   document.getElementById('mNm').textContent=f.fileName;
   document.getElementById('mSz').textContent=f.sizeText||'';
   document.getElementById('mDl').onclick=function(){mode==='ws'?doDelWs(id,idx):doDelVtr(id,idx);};
