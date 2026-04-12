@@ -79,8 +79,8 @@
 
     /* Modal */
     .mb{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
-    .mx{position:relative;max-width:94vw;max-height:90vh;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--bd)}
-    .mx img{display:block;max-width:94vw;max-height:74vh;object-fit:contain}
+    .mx{position:relative;max-width:94vw;max-height:90vh;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--bd);display:flex;flex-direction:column}
+    .mx img{display:block;width:auto;max-width:94vw;max-height:74vh;object-fit:contain;align-self:center}
     .mx video{display:block;max-width:94vw;max-height:74vh;background:#000}
     .mf{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--bd)}
     .mn{font-size:11px;color:var(--dm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
@@ -173,6 +173,14 @@
 
       /* Toast — full width */
       .toast { width: calc(100% - 32px); text-align: center; white-space: normal; font-size: 12px; }
+    }
+
+    /* ===================== TABLET / iPAD ===================== */
+    /* Touch devices wider than phone (iPad) — always-visible overlay buttons */
+    @media (min-width: 601px) and (hover: none) and (pointer: coarse) {
+      .gi { width: 90px; height: 90px; }
+      .gi .go { opacity: 1; background: rgba(0,0,0,.45); }
+      .go button { width: 34px; height: 34px; font-size: 13px; }
     }
   </style>
 </head>
