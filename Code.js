@@ -139,6 +139,9 @@ function uploadFile(formData) {
     blob.setName(newFileName);
 
     var file = folder.createFile(blob);
+    // Make file accessible to anyone with the link so thumbnail URLs load
+    // on all browsers (Safari on iPad blocks cross-site auth cookies).
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     var fileId = file.getId();
     var isVideo = formData.mimeType.indexOf('video') === 0;
 
@@ -286,6 +289,7 @@ function uploadChunk(data) {
     var destFolder = meta.sectionId ? getWsFolder(meta.sectionId) : getTopicFolder(meta.topicId);
     var finalBlob = Utilities.newBlob(combined, meta.mimeType, meta.fileName);
     var file = destFolder.createFile(finalBlob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     var fileId = file.getId();
 
     // ลบ temp session folder และ property
@@ -329,6 +333,9 @@ function collectFiles(folder, result) {
     if (name.endsWith('.zip')) continue;
 
     var id = file.getId();
+    // Ensure link-sharing is on so thumbnail URLs load without auth cookies
+    // (fixes broken thumbnails on iPad Safari / browsers with cross-site cookie blocking).
+    try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch(e) {}
     var mime = file.getMimeType();
     var parts = name.split('_');
     parts.pop();
@@ -443,6 +450,7 @@ function uploadWsFile(formData) {
     var newFileName = formData.sectionId + '_' + timestamp + '.' + ext;
     blob.setName(newFileName);
     var file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     var fileId = file.getId();
     var isVideo = formData.mimeType.indexOf('video') === 0;
     return {
@@ -484,6 +492,7 @@ function getWsFiles() {
         var file = files.next();
         if (file.getName().endsWith('.zip')) continue;
         var id = file.getId();
+        try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch(e) {}
         var mime = file.getMimeType();
         var isVideo = mime.indexOf('video') === 0;
         result.push({
