@@ -79,8 +79,8 @@
 
     /* Modal */
     .mb{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
-    .mx{position:relative;max-width:94vw;max-height:90vh;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--bd)}
-    .mx img{display:block;max-width:94vw;max-height:74vh;object-fit:contain}
+    .mx{position:relative;max-width:94vw;max-height:90vh;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--bd);display:flex;flex-direction:column}
+    .mx img{display:block;width:auto;max-width:94vw;max-height:74vh;object-fit:contain;align-self:center}
     .mx video{display:block;max-width:94vw;max-height:74vh;background:#000}
     .mf{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--bd)}
     .mn{font-size:11px;color:var(--dm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
@@ -133,9 +133,10 @@
       .gl { padding-left: 0; gap: 8px; margin-top: 10px; }
       .gi { width: 96px; height: 96px; border-radius: 10px; }
 
-      /* Always show overlay action buttons on touch (no hover) */
-      .gi .go { opacity: 1; background: rgba(0,0,0,.45); }
-      .go button { width: 36px; height: 36px; font-size: 14px; }
+      /* Touch phones — small delete badge in corner; image stays visible */
+      .gi .go { opacity: 1; background: none; align-items: flex-start; justify-content: flex-end; padding: 4px; }
+      .ov-v { display: none; }
+      .ov-d { width: 26px; height: 26px; font-size: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
 
       /* Upload buttons — bigger tap area */
       .ur { padding-left: 0; gap: 8px; margin-top: 10px; }
@@ -173,6 +174,24 @@
 
       /* Toast — full width */
       .toast { width: calc(100% - 32px); text-align: center; white-space: normal; font-size: 12px; }
+    }
+
+    /* ===================== TABLET / iPAD ===================== */
+    /* On iPad, the whole thumbnail (.gi) is already tappable to open preview.
+       So we hide the redundant 👁 view button and show only a small delete
+       badge in the top-right corner — the image stays fully visible. */
+    @media (min-width: 601px) and (hover: none) and (pointer: coarse) {
+      .gi { width: 90px; height: 90px; }
+      .gi .go {
+        opacity: 1;
+        background: none;          /* no dark overlay — image fully visible */
+        align-items: flex-start;
+        justify-content: flex-end;
+        padding: 4px;
+      }
+      .ov-v { display: none; }     /* hide view btn — tap anywhere on image opens preview */
+      .ov-d { width: 24px; height: 24px; font-size: 11px;
+              box-shadow: 0 1px 4px rgba(0,0,0,.6); }
     }
   </style>
 </head>
@@ -762,7 +781,16 @@ function openM(mode,id,idx){
   var imgEl=document.getElementById('mImg');
   var vidEl=document.getElementById('mVid');
   if(f.isVideo){imgEl.classList.add('hidden');vidEl.classList.remove('hidden');vidEl.src=f.previewUrl||'';}
-  else{vidEl.classList.add('hidden');vidEl.src='';imgEl.classList.remove('hidden');imgEl.src=f.thumbnail.replace('sz=w400','sz=w1600');}
+  else{
+    vidEl.classList.add('hidden');vidEl.src='';
+    imgEl.classList.remove('hidden');
+    // Use the real file URL so the full-resolution image is shown in the preview,
+    // not the low-quality thumbnail served by the /thumbnail endpoint.
+    imgEl.src='https://drive.google.com/uc?export=view&id='+f.fileId;
+    // Fallback: if the direct URL fails (e.g. large-file virus-scan redirect),
+    // fall back to a high-res thumbnail so something is always displayed.
+    imgEl.onerror=function(){imgEl.onerror=null;imgEl.src=f.thumbnail.replace('sz=w400','sz=w2000');};
+  }
   document.getElementById('mNm').textContent=f.fileName;
   document.getElementById('mSz').textContent=f.sizeText||'';
   document.getElementById('mDl').onclick=function(){mode==='ws'?doDelWs(id,idx):doDelVtr(id,idx);};
