@@ -60,11 +60,17 @@
     .ov-d{background:var(--rd);color:#fff}
     .vi-badge{position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,.7);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600;pointer-events:none}
     .fi-size{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.7);color:var(--dm);font-size:8px;padding:1px 4px;border-radius:3px;pointer-events:none}
+    .cap-badge{position:absolute;top:3px;left:3px;background:rgba(79,195,247,.86);color:#0c141c;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700;pointer-events:none}
 
     /* Upload */
     .ur{margin-top:8px;padding-left:46px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
     .ul{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;border:1px dashed var(--bd);background:transparent;color:var(--dm);font-family:'Sarabun',sans-serif;font-size:11px;cursor:pointer;transition:all .15s}
     .ul:hover{border-color:var(--ac);color:var(--ac)}
+    .cap-row{margin-top:8px;padding-left:46px}
+    .cap-input{width:100%;min-height:54px;resize:vertical;border:1px solid var(--bd);border-radius:8px;background:rgba(255,255,255,.03);color:var(--tx);font-family:'Sarabun',sans-serif;font-size:12px;line-height:1.6;padding:8px 10px;outline:none}
+    .cap-input:focus{border-color:var(--ac);box-shadow:0 0 0 2px rgba(79,195,247,.08)}
+    .cap-input::placeholder{color:var(--dm)}
+    .file-cap{width:100%;font-size:10px;line-height:1.5;color:var(--ac2);background:rgba(79,195,247,.08);border:1px solid rgba(79,195,247,.16);border-radius:6px;padding:4px 6px;margin-top:4px;max-width:80px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 
     /* Progress bar */
     .pg-wrap{width:100%;margin-top:6px;padding-left:46px}
@@ -84,6 +90,7 @@
     .mx video{display:block;max-width:94vw;max-height:74vh;background:#000}
     .mf{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--bd)}
     .mn{font-size:11px;color:var(--dm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+    .mdesc{font-size:12px;color:var(--tx);line-height:1.7;background:rgba(79,195,247,.06);border-left:3px solid rgba(79,195,247,.35);padding:8px 10px;margin:0 14px 10px;border-radius:0 6px 6px 0;white-space:pre-wrap}
     .ms{font-size:10px;color:var(--dm);margin-left:8px;white-space:nowrap}
     .mc{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .btn-sm{padding:4px 10px;font-size:11px;border-radius:5px}
@@ -141,6 +148,9 @@
       /* Upload buttons — bigger tap area */
       .ur { padding-left: 0; gap: 8px; margin-top: 10px; }
       .ul { padding: 10px 16px; font-size: 13px; border-radius: 8px; flex: 1; justify-content: center; min-width: 120px; }
+      .cap-row { padding-left: 0; }
+      .cap-input { font-size: 13px; min-height: 64px; }
+      .file-cap { max-width: 96px; font-size: 10px; }
 
       /* Progress */
       .pg-wrap { padding-left: 0; }
@@ -198,14 +208,14 @@
 <body>
 
 <div class="hd">
-  <h1>📋 เครื่องมือนิเทศเปิดภาคเรียนที่ 1 ปี 2569</h1>
-  <p>อัปโหลดรูปภาพและวิดีโอ · นิเทศเชิงรุกปลุกพลังการเรียนรู้ "เรียนดี มีคุณธรรม"</p>
+  <h1>📁 อัปโหลดหลักฐานประเมินครูผู้ช่วย</h1>
+  <p>อัปโหลดรูปภาพและวิดีโอตามด้านและหัวข้อย่อยจากแฟ้มประเมินครูผู้ช่วย</p>
 </div>
 
 <!-- Supervision Panel -->
 <div id="wsPanel">
   <div class="st">
-    <div>หัวข้อทั้งหมด: <span id="wsST">0</span></div>
+    <div>หัวข้อย่อยทั้งหมด: <span id="wsST">0</span></div>
     <div>มีไฟล์แล้ว: <span id="wsSD">0</span></div>
     <div>ไฟล์ทั้งหมด: <span id="wsSF">0</span></div>
     <div>ยังไม่มี: <span id="wsSR">0</span></div>
@@ -223,6 +233,7 @@
     <button class="mc" onclick="closeM()">✕</button>
     <img id="mImg" class="hidden" />
     <video id="mVid" class="hidden" controls></video>
+    <div class="mdesc hidden" id="mDesc"></div>
     <div class="mf">
       <div class="mn" id="mNm"></div>
       <div class="ms" id="mSz"></div>
@@ -240,53 +251,18 @@
 <script>
 // ===================== SUPERVISION CHECKLIST DATA =====================
 var WS_TOPICS=[
-  // ด้านที่ 1 การบริหารจัดการ
-  {id:"s1-1",num:"1.1",title:"มีการวางแผนการดำเนินงานตามนโยบาย สพฐ. \"เรียนดี มีคุณธรรม\" และจุดเน้นของ สพป.ร้อยเอ็ด เขต 2 ROIET2 Plus Model \"งานสำเร็จผล คนมีความสุข ทุกคนปลอดภัย\""},
-  {id:"s1-2",num:"1.2",title:"มีการประสานเครือข่ายและสร้างความร่วมมือกับคณะกรรมการสถานศึกษาและหน่วยงานที่เกี่ยวข้องในการวางแผนการพัฒนาคุณภาพการศึกษาก่อนเปิดภาคเรียน"},
-  {id:"s1-3",num:"1.3",title:"มีวิธีการตรวจสอบข้อมูล ทร.14 เพื่อคัดกรองและติดตามเด็กที่ยังไม่มาสมัครเรียนให้เข้าสู่ระบบการศึกษาได้อย่างครบถ้วน"},
-  {id:"s1-4",num:"1.4",title:"มีการจัดประชุมครูและบุคลากรเพื่อวางแผนการพัฒนาและจัดทำปฏิทินดำเนินงานของสถานศึกษาเพื่อเตรียมความพร้อมก่อนเปิดภาคเรียนที่ 1 ปีการศึกษา 2569"},
-  {id:"s1-5",num:"1.5",title:"มีคำสั่งการจัดชั้นเรียน ดำเนินงานธุรการและสารสนเทศของโรงเรียนเป็นปัจจุบันและมอบหมายงานให้ครูรับผิดชอบที่ชัดเจน"},
-  {id:"s1-6",num:"1.6",title:"กรณีโรงเรียนที่มีนักเรียนเรียนรวม มีการเตรียมความพร้อมในการจัดการศึกษาแบบเรียนรวม (ตามความพิการทั้ง 9 ประเภท)"},
-  {id:"s1-7",num:"1.7",title:"โรงเรียนได้รับงบประมาณอาหารกลางวันจากองค์การบริหารส่วนตำบล/เทศบาล/องค์กรปกครองส่วนท้องถิ่นทันเปิดภาคเรียนที่ 1/2569"},
-  {id:"s1-8",num:"1.8",title:"โรงเรียนได้จัดทำโปรแกรม Thai School Lunch (โปรแกรมอาหารกลางวัน สพฐ.)"},
-  {id:"s1-9",num:"1.9",title:"โรงเรียนได้รับอาหารเสริมนมจากองค์การบริหารส่วนตำบล/เทศบาล/องค์กรปกครองส่วนท้องถิ่นทันเปิดภาคเรียนที่ 1/2569"},
-  {id:"s1-10",num:"1.10",title:"มีการจัดระบบความปลอดภัย มีแผนเผชิญเหตุและบุคลากรทุกคนรับทราบร่วมกัน"},
-  // ด้านที่ 2 การจัดการเรียนการสอน — ระดับปฐมวัย
-  {id:"s2-1",num:"2.1.1",title:"มีหลักสูตรสถานศึกษาปฐมวัย ตามหลักสูตรการศึกษาปฐมวัย ฉบับพุทธศักราช 2560 และพุทธศักราช 2568"},
-  {id:"s2-2",num:"2.1.2",title:"ครูมีการวางแผน/มีแผนการจัดประสบการณ์และจัดเตรียมสื่อการสอนตามแต่ละหน่วย"},
-  {id:"s2-3",num:"2.1.3",title:"การจัดกิจกรรมในห้องเรียนเน้นมาตรการความปลอดภัยให้กับเด็ก"},
-  {id:"s2-4",num:"2.1.4",title:"สภาพแวดล้อมในห้องเรียน สะอาด มีมุมประสบการณ์เอื้อต่อการเรียนรู้"},
-  {id:"s2-5",num:"2.1.5",title:"สภาพแวดล้อมนอกห้องเรียนปลอดภัย ได้แก่ สนามเด็กเล่น พื้นที่เล่นกลางแจ้งที่มีร่มเงา มีที่ล้างมือ ที่รับประทานอาหาร"},
-  {id:"s2-6",num:"2.1.6",title:"มีห้องน้ำสำหรับเด็กปฐมวัยที่สะอาด สะดวก และเหมาะสมกับวัย ปลอดภัย ไม่ลับตา ไม่มีน้ำขัง"},
-  // ด้านที่ 2 การจัดการเรียนการสอน — ระดับการศึกษาขั้นพื้นฐาน
-  {id:"s2-7",num:"2.2.1",title:"มีหลักสูตรสถานศึกษา ตามหลักสูตรแกนกลางการศึกษาขั้นพื้นฐาน พุทธศักราช 2551 และพุทธศักราช 2568"},
-  {id:"s2-8",num:"2.2.2",title:"มีการเตรียมความพร้อมในการจัดการเรียนรู้โดยการออกแบบหน่วยการเรียนรู้สอดคล้องกับมาตรฐานและตัวชี้วัดตามหลักสูตรแกนกลางกำหนด"},
-  {id:"s2-9",num:"2.2.3",title:"มีตารางการจัดการเรียนการสอน จัดทำเอกสารธุรการชั้นเรียน เป็นปัจจุบัน"},
-  {id:"s2-10",num:"2.2.4",title:"มีการวางแผนการใช้กระบวนการ Active Learning หรือนวัตกรรมในการจัดการเรียนรู้"},
-  {id:"s2-11",num:"2.2.5",title:"โรงเรียนที่ใช้การศึกษาทางไกลผ่านดาวเทียม (DLTV) หรือการจัดการเรียนรู้ผ่านเทคโนโลยีสารสนเทศ (DLIT) อุปกรณ์การรับชมใช้งานได้ดีและได้รับการดูแลรักษาให้พร้อมใช้งาน"},
-  {id:"s2-12",num:"2.2.6",title:"มีการนำชุดฝึกทักษะความฉลาดรู้ ระดับชั้น ป.4-6 มาประยุกต์ใช้ในชั้นเรียน"},
-  // ด้านที่ 3 อาคารสถานที่
-  {id:"s3-1",num:"3.1",title:"การจัดบริบทสภาพแวดล้อม สะอาดสวยงามน่าอยู่น่าเรียน"},
-  {id:"s3-2",num:"3.2",title:"อาคารเรียน อาคารประกอบ สนามเด็กเล่น มีความแข็งแรง ปลอดภัยและพร้อมใช้งาน"},
-  {id:"s3-3",num:"3.3",title:"การจัดห้องเรียน โต๊ะ เก้าอี้ สะอาด เป็นระเบียบเรียบร้อย ที่ยืดหยุ่นได้เอื้อต่อการทำกิจกรรมกลุ่มและการเรียนรู้เชิงรุก Active Learning"},
-  {id:"s3-4",num:"3.4",title:"มีมุมสืบค้น หรือป้ายนิเทศที่ไม่ใช่แค่การตกแต่ง แต่เป็น \"Living Board\" ที่เด็กสามารถมีปฏิสัมพันธ์หรือแสดงผลงานได้"},
-  {id:"s3-5",num:"3.5",title:"สภาพแสงสว่างเพียงพอ การถ่ายเทอากาศที่ดี และลดเสียงรบกวนจากภายนอก"},
-  {id:"s3-6",num:"3.6",title:"การจัดห้องสมุด ห้องปฏิบัติการต่างๆ สะอาดเป็นระเบียบเรียบร้อย ปลอดภัย อุปกรณ์พร้อมใช้งานและมีบรรยากาศน่าเรียน"},
-  {id:"s3-7",num:"3.7",title:"โรงอาหารสะอาด ปลอดโปร่ง ระบบน้ำดื่มถูกสุขลักษณะ และการกำจัดขยะที่เป็นระบบ"},
-  {id:"s3-8",num:"3.8",title:"การดูแลรักษา/ตรวจสภาพระบบไฟฟ้า หรือจุดอันตรายในบริเวณโรงเรียนให้มีความปลอดภัย มีระบบน้ำ/น้ำประปาที่เหมาะสมกับสภาพพื้นที่"},
-  {id:"s3-9",num:"3.9",title:"ห้องน้ำห้องส้วม สะอาด (แห้งหอม) สะดวก สบาย ถูกสุขลักษณะและสวยงาม มีการปรับปรุง ซ่อมแซมห้องน้ำโรงเรียนให้เป็น \"สุขาดี มีความสุข\""},
-  {id:"s3-10",num:"3.10",title:"จัดที่จอด จุดจอด รถรับ-ส่งนักเรียน และมีมาตรการเพื่อความปลอดภัยสำหรับการเดินทางไป-กลับของนักเรียน"},
-  // ด้านที่ 4 ผู้เรียน
-  {id:"s4-1",num:"4.1",title:"มีการจัดซื้อหนังสือเรียน แบบเรียนเรียบร้อยโดยการมีส่วนร่วมของภาคี 4 ฝ่าย (ตัวแทนนักเรียน ครู ผู้ปกครอง ชุมชน)"},
-  {id:"s4-2",num:"4.2",title:"ผู้เรียนระดับก่อนประถม มีแบบเรียน หนังสือเรียน เป็นหนังสือเสริมประสบการณ์ระดับชั้นอนุบาลที่สอดคล้องตามหลักสูตรการศึกษาปฐมวัย พุทธศักราช 2560"},
-  {id:"s4-3",num:"4.3",title:"นักเรียนระดับประถมศึกษา (ป.1-ป.6) มีหนังสือเรียนสาระการเรียนรู้พื้นฐาน 8 กลุ่มสาระตามหลักสูตรแกนกลาง พุทธศักราช 2551 และแบบฝึกหัด 3 กลุ่มสาระ (ภาษาไทย คณิตศาสตร์ ภาษาต่างประเทศ)"},
-  {id:"s4-4",num:"4.4",title:"นักเรียนระดับมัธยมศึกษา (ม.1-ม.3) มีหนังสือเรียนสาระการเรียนรู้พื้นฐาน 8 กลุ่มสาระตามหลักสูตรแกนกลาง พุทธศักราช 2551"},
-  {id:"s4-5",num:"4.5",title:"นักเรียนมีอุปกรณ์การเรียนจริงตามที่ได้รับจัดสรร และได้รับทันก่อนเปิดภาคเรียน"},
-  {id:"s4-6",num:"4.6",title:"นักเรียนมีเครื่องแบบนักเรียนจริงตามที่ได้รับจัดสรรและได้รับทันก่อนเปิดภาคเรียน"},
-  {id:"s4-7",num:"4.7",title:"นักเรียนได้รับอาหารกลางวัน อาหารเสริม (นม) และมีจุดบริการน้ำดื่มเหมาะสม"},
-  {id:"s4-8",num:"4.8",title:"นักเรียนแต่งกายสะอาด เรียบร้อย ถูกต้องตามระเบียบ"},
-  {id:"s4-9",num:"4.9",title:"นักเรียนมีความพร้อมในการมาเรียนและกระตือรือร้นในการเรียน"},
-  {id:"s4-10",num:"4.10",title:"นักเรียนมีความสุข"}
+  {id:"t1-1",num:"1.1",title:"วินัยและการรักษาวินัย",desc:"การประพฤติตนตามระเบียบวินัยราชการ การแต่งกายสุภาพ ตรงต่อเวลา ซื่อสัตย์ อุทิศเวลา และเป็นแบบอย่างที่ดี"},
+  {id:"t1-2",num:"1.2",title:"คุณธรรม จริยธรรม",desc:"การยึดหลักคุณธรรม จริยธรรม และหลักธรรมในการปฏิบัติงาน พร้อมสอดแทรกคุณธรรมแก่ผู้เรียน"},
+  {id:"t1-3",num:"1.3",title:"จรรยาบรรณวิชาชีพ",desc:"การปฏิบัติตนตามมาตรฐานและจรรยาบรรณวิชาชีพครู ต่อตนเอง ผู้เรียน เพื่อนร่วมวิชาชีพ และสังคม"},
+  {id:"t1-4",num:"1.4",title:"การดำรงชีวิตตามหลักปรัชญาเศรษฐกิจพอเพียง",desc:"การนำหลักความพอประมาณ ความมีเหตุผล ภูมิคุ้มกัน ความรู้ และคุณธรรมมาใช้ในการดำเนินชีวิตและการทำงาน"},
+  {id:"t1-5",num:"1.5",title:"จิตวิญญาณความเป็นครู",desc:"ความรัก ศรัทธา และความมุ่งมั่นในวิชาชีพ การเตรียมการสอน ดูแลช่วยเหลือผู้เรียน และปฏิบัติงานเต็มความสามารถ"},
+  {id:"t1-6",num:"1.6",title:"จิตสำนึกความรับผิดชอบในวิชาชีพครู",desc:"ความรับผิดชอบต่อหน้าที่ เจตคติเชิงบวก การสร้างสื่อหรือนวัตกรรม และการรักษาภาพลักษณ์ของครู"},
+  {id:"t2-1",num:"2.1",title:"การจัดการเรียนการสอน",desc:"การวิเคราะห์มาตรฐาน ตัวชี้วัด ออกแบบแผนการจัดการเรียนรู้ พัฒนาสื่อ วัดประเมินผล และวิจัยเพื่อพัฒนาผู้เรียน"},
+  {id:"t2-2",num:"2.2",title:"การบริหารจัดการชั้นเรียน",desc:"การจัดบรรยากาศในชั้นเรียน ปลูกฝังคุณธรรม วินัย ประชาธิปไตย ดูแลสุขภาพกายใจ และช่วยเหลือผู้เรียนรายบุคคล"},
+  {id:"t2-3",num:"2.3",title:"การพัฒนาตนเอง",desc:"การวางแผนพัฒนาตนเอง อบรม ศึกษาหาความรู้ ใช้เทคโนโลยี และมีส่วนร่วมในชุมชนการเรียนรู้ทางวิชาชีพ PLC"},
+  {id:"t2-4",num:"2.4",title:"การทำงานเป็นทีม",desc:"การทำงานร่วมกับผู้อื่น ประสานงาน ปรับตัว เป็นผู้นำและผู้ตาม แลกเปลี่ยนความคิดเห็น และร่วมมือเพื่อเป้าหมายสถานศึกษา"},
+  {id:"t2-5",num:"2.5",title:"งานกิจกรรมตามภารกิจบริหารงานของสถานศึกษา",desc:"ภาระงานที่ได้รับมอบหมาย เช่น งานครูประจำชั้น งานสอน งานอนามัย งานสื่อเทคโนโลยี ห้องคอมพิวเตอร์ และกิจกรรมโรงเรียน"},
+  {id:"t2-6",num:"2.6",title:"การใช้ภาษาและเทคโนโลยี",desc:"การใช้ภาษา เทคโนโลยี เว็บไซต์ แอปพลิเคชัน และสื่อดิจิทัลเพื่อสนับสนุนการสอนและการปฏิบัติงาน"}
 ];
 
 // ===================== STATE =====================
@@ -298,19 +274,14 @@ window.onload=function(){renderWs();doWsRefresh();};
 
 // ===================== SUPERVISION CHECKLIST RENDER =====================
 var SECTION_HEADERS = {
-  's1': {label:'ด้านที่ 1', title:'การบริหารจัดการ'},
-  's2': {label:'ด้านที่ 2', title:'การจัดการเรียนการสอน'},
-  's3': {label:'ด้านที่ 3', title:'อาคารสถานที่'},
-  's4': {label:'ด้านที่ 4', title:'ผู้เรียน'}
+  't1': {label:'ด้านที่ 1', title:'การปฏิบัติตน'},
+  't2': {label:'ด้านที่ 2', title:'การปฏิบัติงาน'}
 };
-var SUB_HEADERS = {
-  's2-1': 'ระดับปฐมวัย',
-  's2-7': 'ระดับการศึกษาขั้นพื้นฐาน'
-};
+var SUB_HEADERS = {};
 
 function renderWs(){
   var h='';
-  h+='<div class="oh"><div class="ol">นิเทศเชิงรุกปลุกพลังการเรียนรู้</div><div class="ot">เครื่องมือนิเทศติดตามการเปิดภาคเรียนที่ 1 ปีการศึกษา 2569 · "เรียนดี มีคุณธรรม"</div></div>';
+  h+='<div class="oh"><div class="ol">แฟ้มประเมินครูผู้ช่วย</div><div class="ot">อัปโหลดหลักฐานตามหัวข้อและหัวข้อย่อยจากไฟล์โครงสร้าง</div></div>';
   var dn=0,tf=0;
   var lastSection='';
   WS_TOPICS.forEach(function(it){
@@ -320,7 +291,7 @@ function renderWs(){
     if(has)dn++;
     tf+=fs.length;
     // Section header
-    var sec=it.id.match(/^(s\d)/);
+    var sec=it.id.match(/^(t\d)/);
     var secKey=sec?sec[1]:'';
     if(secKey && secKey!==lastSection){
       lastSection=secKey;
@@ -329,7 +300,7 @@ function renderWs(){
     }
     // Sub-section header
     if(SUB_HEADERS[it.id]) h+='<div class="dh" style="padding-left:32px;font-size:12px;opacity:.8">'+SUB_HEADERS[it.id]+'</div>';
-    h+='<div class="tc"><div class="th"><div class="tn">'+it.num+'</div><div class="tb"><div class="tt">'+it.title+'</div><div class="tm">';
+    h+='<div class="tc"><div class="th"><div class="tn">'+it.num+'</div><div class="tb"><div class="tt"><b>'+it.title+'</b></div>'+(it.desc?'<div class="ws-script-text" style="margin-top:3px">'+it.desc+'</div>':'')+'<div class="tm">';
     if(has){
       var vc=0,ic=0;
       fs.forEach(function(f){f.isVideo?vc++:ic++});
@@ -348,6 +319,7 @@ function renderWs(){
         h+='<div class="gi" onclick="openM(\'ws\',\''+it.id+'\','+i+')">';
         if(f.isVideo){h+='<img src="'+f.thumbnail+'" onerror="this.style.background=\'#1a2836\'" />';h+='<div class="vi-badge">▶ VDO</div>';}
         else{h+='<img src="'+f.thumbnail+'" loading="lazy" />';}
+        if(f.description)h+='<div class="cap-badge" title="'+esc(f.description)+'">คำอธิบาย</div>';
         if(f.sizeText)h+='<div class="fi-size">'+f.sizeText+'</div>';
         h+='<div class="go"><button class="ov-v" onclick="event.stopPropagation();openM(\'ws\',\''+it.id+'\','+i+')">👁</button>';
         h+='<button class="ov-d" onclick="event.stopPropagation();doDelWs(\''+it.id+'\','+i+')">✕</button></div></div>';
@@ -362,7 +334,8 @@ function renderWs(){
       h+='<div class="pg-wrap"><div class="pg-bar"><div class="pg-fill" style="width:'+prog.percent+'%"></div></div>';
       h+='<div class="pg-text">'+pgLabel+'</div></div>';
     }
-    // Upload buttons
+    // Optional caption + upload buttons
+    h+='<div class="cap-row"><textarea class="cap-input" id="cap_'+it.id+'" maxlength="1000" placeholder="คำอธิบายภาพ/ไฟล์ประกอบ (ไม่บังคับ) เช่น กิจกรรมอะไร วันที่ไหน ผู้เกี่ยวข้อง หรือผลลัพธ์ที่เกิดขึ้น"></textarea></div>';
     h+='<div class="ur">';
     h+='<label class="ul">📷 '+(has?'เพิ่มรูป':'เลือกรูป')+'<input type="file" accept="image/*" multiple style="display:none" onchange="doWsUp(this,\''+it.id+'\')" /></label>';
     h+='<label class="ul">🎬 '+(has?'เพิ่มวิดีโอ':'เลือกวิดีโอ')+'<input type="file" accept="video/*,video/mp4,video/quicktime,video/3gpp,video/x-matroska" multiple style="display:none" onchange="doWsUp(this,\''+it.id+'\')" /></label>';
@@ -551,6 +524,8 @@ function makeProgressThrottle(renderFn) {
 function doWsUp(input,sid){
   var files=Array.from(input.files);
   if(!files.length)return;
+  var capEl=document.getElementById('cap_'+sid);
+  var description=capEl ? capEl.value.trim() : '';
   var total=files.length,done=0;
   wsUploadProgress[sid]={current:0,total:total,percent:0};
   renderWs();
@@ -559,13 +534,13 @@ function doWsUp(input,sid){
   files.forEach(function(file){
     uploadOneFile(
       file,
-      {sectionId:sid},
+      {sectionId:sid,description:description},
       function(r){
         done++;
         if(!wsMap[sid])wsMap[sid]=[];
-        wsMap[sid].push({fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:r.sizeText||''});
+        wsMap[sid].push({fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:r.sizeText||'',description:r.description||description||''});
         wsUploadProgress[sid]={current:done,total:total,percent:Math.round(done/total*100)};
-        if(done===total){delete wsUploadProgress[sid];toast('อัปโหลดเสร็จ','success');}
+        if(done===total){delete wsUploadProgress[sid];if(capEl)capEl.value='';toast('อัปโหลดเสร็จ','success');}
         renderWs();
       },
       function(err){
@@ -605,7 +580,7 @@ function doDelWs(sid,idx){
 function openM(mode,id,idx){
   var fs=wsMap[id];if(!fs||!fs[idx])return;
   var f=fs[idx];
-  curP={mode:mode,id:id,idx:idx,fileId:f.fileId,fileName:f.fileName,isVideo:f.isVideo};
+  curP={mode:mode,id:id,idx:idx,fileId:f.fileId,fileName:f.fileName,isVideo:f.isVideo,description:f.description||''};
   var imgEl=document.getElementById('mImg');
   var vidEl=document.getElementById('mVid');
   if(f.isVideo){imgEl.classList.add('hidden');vidEl.classList.remove('hidden');vidEl.src=f.previewUrl||'';}
@@ -620,6 +595,9 @@ function openM(mode,id,idx){
     imgEl.onerror=function(){imgEl.onerror=null;imgEl.src=f.thumbnail.replace('sz=w400','sz=w2000');};
   }
   document.getElementById('mNm').textContent=f.fileName;
+  var descEl=document.getElementById('mDesc');
+  if(f.description){descEl.textContent=f.description;descEl.classList.remove('hidden');}
+  else{descEl.textContent='';descEl.classList.add('hidden');}
   document.getElementById('mSz').textContent=f.sizeText||'';
   document.getElementById('mDl').onclick=function(){doDelWs(id,idx);};
   document.getElementById('repIn').onchange=function(){doReplace(this);};
@@ -637,7 +615,7 @@ function doReplace(input){
   var file=input.files[0];if(!file||!curP)return;
   var cp=curP;
   toast('กำลังเปลี่ยนไฟล์...','success');
-  var extraFields={oldFileId:cp.fileId,sectionId:cp.id};
+  var extraFields={oldFileId:cp.fileId,sectionId:cp.id,description:cp.description||''};
 
   google.script.run
     .withSuccessHandler(function(){
@@ -646,7 +624,7 @@ function doReplace(input){
         extraFields,
         function(r){
           var fs=wsMap[cp.id];
-          if(fs&&fs[cp.idx])fs[cp.idx]={fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:r.sizeText||''};
+          if(fs&&fs[cp.idx])fs[cp.idx]={fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:r.sizeText||'',description:r.description||cp.description||''};
           curP.fileId=r.fileId;curP.fileName=r.fileName;curP.isVideo=r.isVideo;
           openM(cp.mode,cp.id,cp.idx);
           renderWs();
@@ -669,7 +647,7 @@ function doWsRefresh(){
       files.forEach(function(f){
         var sid=f.sectionId;if(!sid)return;
         if(!wsMap[sid])wsMap[sid]=[];
-        wsMap[sid].push({fileId:f.id,fileName:f.name,isVideo:f.isVideo,mimeType:f.mimeType,thumbnail:f.thumbnail,previewUrl:f.previewUrl,sizeText:f.sizeText||''});
+        wsMap[sid].push({fileId:f.id,fileName:f.name,isVideo:f.isVideo,mimeType:f.mimeType,thumbnail:f.thumbnail,previewUrl:f.previewUrl,sizeText:f.sizeText||'',description:f.description||''});
       });
       renderWs();hideOv();
     })
@@ -687,6 +665,7 @@ function doWsZip(){
 }
 
 // ===================== UTILS =====================
+function esc(v){return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function toast(m,t){var el=document.getElementById('toast');el.textContent=m;el.className='toast toast-'+t+' show';clearTimeout(window._tt);window._tt=setTimeout(function(){el.className='toast'},3000)}
 function showOv(t){document.getElementById('ovT').textContent=t;document.getElementById('ov').classList.remove('hidden')}
 function hideOv(){document.getElementById('ov').classList.add('hidden')}

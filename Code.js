@@ -4,7 +4,7 @@
 // รองรับรูปภาพ + วิดีโอ คุณภาพต้นฉบับ
 // ============================
 
-const DRIVE_FOLDER_ID = '1NU7kkwHj2tEbhq2uChFUz8_tHNg6JI6D';
+const DRIVE_FOLDER_ID = '1qaT2i0RPJfLzaFwKEXnVJ27178SRN7Zz';
 
 // ขนาดจำกัดต่อ chunk (Apps Script max payload ~50MB แต่ใช้ 30MB ให้ปลอดภัย)
 const CHUNK_SIZE_LIMIT = 30 * 1024 * 1024; // 30MB in bytes
@@ -69,7 +69,7 @@ var FOLDER_STRUCTURE = {
 
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
-    .setTitle('VTR Image & Video Uploader')
+    .setTitle('อัปโหลดหลักฐานครูผู้ช่วย')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover');
 }
@@ -198,6 +198,7 @@ function startChunkedUpload(formData) {
       mimeType: formData.mimeType,
       topicId: formData.topicId || '',
       sectionId: formData.sectionId || '',
+      description: cleanDescription(formData.description),
       totalChunks: formData.totalChunks || 0,
       finalized: false
     }));
@@ -289,6 +290,7 @@ function uploadChunk(data) {
     var destFolder = meta.sectionId ? getWsFolder(meta.sectionId) : getTopicFolder(meta.topicId);
     var finalBlob = Utilities.newBlob(combined, meta.mimeType, meta.fileName);
     var file = destFolder.createFile(finalBlob);
+    var description = maybeSetDescription(file, meta.description);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     var fileId = file.getId();
 
@@ -304,6 +306,8 @@ function uploadChunk(data) {
       fileName: meta.fileName,
       isVideo: isVideo,
       mimeType: meta.mimeType,
+      description: description,
+      sizeText: formatSize(file.getSize()),
       thumbnail: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400',
       previewUrl: isVideo ? 'https://drive.google.com/file/d/' + fileId + '/preview' : null
     };
@@ -351,6 +355,7 @@ function collectFiles(folder, result) {
       isVideo: isVideo,
       size: sizeBytes,
       sizeText: formatSize(sizeBytes),
+      description: file.getDescription() || '',
       thumbnail: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400',
       previewUrl: isVideo ? 'https://drive.google.com/file/d/' + id + '/preview' : null
     });
@@ -364,6 +369,16 @@ function formatSize(bytes) {
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
   return (bytes / 1073741824).toFixed(2) + ' GB';
+}
+
+function cleanDescription(value) {
+  return String(value || '').trim().slice(0, 1000);
+}
+
+function maybeSetDescription(file, description) {
+  var text = cleanDescription(description);
+  if (text) file.setDescription(text);
+  return text;
 }
 
 // ===== Delete =====
@@ -411,57 +426,41 @@ function createZip() {
   }
 }
 
-// ===== Supervision Checklist Folder Structure =====
-var WS_ROOT_NAME = 'นิเทศเปิดภาคเรียนที่1_2569';
-var WS_FOLDERS = {
-  // ด้านที่ 1 การบริหารจัดการ
-  's1-1':  '01_1.1_วางแผนนโยบาย_สพฐ',
-  's1-2':  '02_1.2_ประสานเครือข่าย',
-  's1-3':  '03_1.3_ตรวจสอบข้อมูล_ทร14',
-  's1-4':  '04_1.4_ประชุมครูปฏิทินดำเนินงาน',
-  's1-5':  '05_1.5_คำสั่งจัดชั้นเรียนธุรการ',
-  's1-6':  '06_1.6_เรียนรวม',
-  's1-7':  '07_1.7_งบอาหารกลางวัน',
-  's1-8':  '08_1.8_ThaiSchoolLunch',
-  's1-9':  '09_1.9_อาหารเสริมนม',
-  's1-10': '10_1.10_ระบบความปลอดภัย',
-  // ด้านที่ 2 ปฐมวัย
-  's2-1':  '11_2.1.1_หลักสูตรปฐมวัย',
-  's2-2':  '12_2.1.2_แผนประสบการณ์สื่อ',
-  's2-3':  '13_2.1.3_ความปลอดภัยห้องเรียน',
-  's2-4':  '14_2.1.4_สภาพแวดล้อมห้องเรียน',
-  's2-5':  '15_2.1.5_สภาพแวดล้อมนอกห้อง',
-  's2-6':  '16_2.1.6_ห้องน้ำปฐมวัย',
-  // ด้านที่ 2 ขั้นพื้นฐาน
-  's2-7':  '17_2.2.1_หลักสูตรขั้นพื้นฐาน',
-  's2-8':  '18_2.2.2_ออกแบบหน่วยการเรียนรู้',
-  's2-9':  '19_2.2.3_ตารางสอนธุรการชั้นเรียน',
-  's2-10': '20_2.2.4_ActiveLearning',
-  's2-11': '21_2.2.5_DLTV_DLIT',
-  's2-12': '22_2.2.6_ชุดฝึกทักษะความฉลาดรู้',
-  // ด้านที่ 3 อาคารสถานที่
-  's3-1':  '23_3.1_สภาพแวดล้อมสะอาดสวยงาม',
-  's3-2':  '24_3.2_อาคารสนามแข็งแรง',
-  's3-3':  '25_3.3_ห้องเรียนActiveLearning',
-  's3-4':  '26_3.4_LivingBoard',
-  's3-5':  '27_3.5_แสงสว่างอากาศ',
-  's3-6':  '28_3.6_ห้องสมุดปฏิบัติการ',
-  's3-7':  '29_3.7_โรงอาหารน้ำดื่ม',
-  's3-8':  '30_3.8_ไฟฟ้าน้ำประปา',
-  's3-9':  '31_3.9_ห้องน้ำสุขาดี',
-  's3-10': '32_3.10_จอดรถความปลอดภัย',
-  // ด้านที่ 4 ผู้เรียน
-  's4-1':  '33_4.1_จัดซื้อหนังสือเรียน',
-  's4-2':  '34_4.2_หนังสือปฐมวัย',
-  's4-3':  '35_4.3_หนังสือประถม',
-  's4-4':  '36_4.4_หนังสือมัธยม',
-  's4-5':  '37_4.5_อุปกรณ์การเรียน',
-  's4-6':  '38_4.6_เครื่องแบบนักเรียน',
-  's4-7':  '39_4.7_อาหารกลางวันนม',
-  's4-8':  '40_4.8_แต่งกายสะอาด',
-  's4-9':  '41_4.9_ความพร้อมเรียน',
-  's4-10': '42_4.10_นักเรียนมีความสุข'
+// ===== Teacher Assistant Evaluation Folder Structure =====
+// โครงสร้างอัปโหลดอิงจากไฟล์ pptx_topics_outline.md
+var WS_ROOT_NAME = 'หลักฐานประเมินครูผู้ช่วย_ตามหัวข้อ';
+var WS_SECTIONS = {
+  'd1': {
+    name: 'ด้านที่ 1 การปฏิบัติตน',
+    children: ['t1-1', 't1-2', 't1-3', 't1-4', 't1-5', 't1-6']
+  },
+  'd2': {
+    name: 'ด้านที่ 2 การปฏิบัติงาน',
+    children: ['t2-1', 't2-2', 't2-3', 't2-4', 't2-5', 't2-6']
+  }
 };
+var WS_FOLDERS = {
+  't1-1': '1.1 วินัยและการรักษาวินัย',
+  't1-2': '1.2 คุณธรรม จริยธรรม',
+  't1-3': '1.3 จรรยาบรรณวิชาชีพ',
+  't1-4': '1.4 การดำรงชีวิตตามหลักปรัชญาเศรษฐกิจพอเพียง',
+  't1-5': '1.5 จิตวิญญาณความเป็นครู',
+  't1-6': '1.6 จิตสำนึกความรับผิดชอบในวิชาชีพครู',
+  't2-1': '2.1 การจัดการเรียนการสอน',
+  't2-2': '2.2 การบริหารจัดการชั้นเรียน',
+  't2-3': '2.3 การพัฒนาตนเอง',
+  't2-4': '2.4 การทำงานเป็นทีม',
+  't2-5': '2.5 งานกิจกรรมตามภารกิจบริหารงานของสถานศึกษา',
+  't2-6': '2.6 การใช้ภาษาและเทคโนโลยี'
+};
+
+function getSectionIdForWs(sectionId) {
+  for (var secKey in WS_SECTIONS) {
+    var children = WS_SECTIONS[secKey].children || [];
+    if (children.indexOf(sectionId) !== -1) return secKey;
+  }
+  return '';
+}
 
 function getWsRoot() {
   var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
@@ -469,9 +468,26 @@ function getWsRoot() {
 }
 
 function getWsFolder(sectionId) {
-  var name = WS_FOLDERS[sectionId];
-  if (!name) return getWsRoot();
-  return getOrCreateFolder(getWsRoot(), name);
+  var topicName = WS_FOLDERS[sectionId];
+  if (!topicName) return getWsRoot();
+  var secId = getSectionIdForWs(sectionId);
+  var parent = getWsRoot();
+  if (secId && WS_SECTIONS[secId]) {
+    parent = getOrCreateFolder(parent, WS_SECTIONS[secId].name);
+  }
+  return getOrCreateFolder(parent, topicName);
+}
+
+function initWsFolders() {
+  for (var secKey in WS_SECTIONS) {
+    var sec = WS_SECTIONS[secKey];
+    var secFolder = getOrCreateFolder(getWsRoot(), sec.name);
+    for (var i = 0; i < sec.children.length; i++) {
+      var sid = sec.children[i];
+      if (WS_FOLDERS[sid]) getOrCreateFolder(secFolder, WS_FOLDERS[sid]);
+    }
+  }
+  return { success: true, message: 'สร้างโครงสร้างโฟลเดอร์ประเมินครูผู้ช่วยเสร็จแล้ว' };
 }
 
 function uploadWsFile(formData) {
@@ -485,6 +501,7 @@ function uploadWsFile(formData) {
     var newFileName = formData.sectionId + '_' + timestamp + '.' + ext;
     blob.setName(newFileName);
     var file = folder.createFile(blob);
+    var description = maybeSetDescription(file, formData.description);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     var fileId = file.getId();
     var isVideo = formData.mimeType.indexOf('video') === 0;
@@ -494,6 +511,8 @@ function uploadWsFile(formData) {
       fileName: newFileName,
       isVideo: isVideo,
       mimeType: formData.mimeType,
+      description: description,
+      sizeText: formatSize(file.getSize()),
       thumbnail: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400',
       previewUrl: isVideo ? 'https://drive.google.com/file/d/' + fileId + '/preview' : null
     };
@@ -513,15 +532,9 @@ function replaceWsFile(formData) {
 
 function getWsFiles() {
   try {
-    var wsRoot = getWsRoot();
-    // Build reverse map: folder name -> sectionId
-    var nameToId = {};
-    for (var key in WS_FOLDERS) nameToId[WS_FOLDERS[key]] = key;
     var result = [];
-    var subs = wsRoot.getFolders();
-    while (subs.hasNext()) {
-      var sub = subs.next();
-      var sid = nameToId[sub.getName()];
+    for (var sid in WS_FOLDERS) {
+      var sub = getWsFolder(sid);
       var files = sub.getFiles();
       while (files.hasNext()) {
         var file = files.next();
@@ -533,11 +546,12 @@ function getWsFiles() {
         result.push({
           name: file.getName(),
           id: id,
-          sectionId: sid || '',
+          sectionId: sid,
           mimeType: mime,
           isVideo: isVideo,
           size: file.getSize(),
           sizeText: formatSize(file.getSize()),
+          description: file.getDescription() || '',
           thumbnail: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400',
           previewUrl: isVideo ? 'https://drive.google.com/file/d/' + id + '/preview' : null
         });
@@ -557,9 +571,9 @@ function createWsZip() {
     collectBlobs(wsRoot, '', blobs);
     if (blobs.length === 0) return { success: false, error: 'ไม่มีไฟล์' };
     var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    var oldFiles = root.getFilesByName('WhiteSchool_Images.zip');
+    var oldFiles = root.getFilesByName('TeacherAssistant_Evidence.zip');
     while (oldFiles.hasNext()) { oldFiles.next().setTrashed(true); }
-    var zipBlob = Utilities.zip(blobs, 'WhiteSchool_Images.zip');
+    var zipBlob = Utilities.zip(blobs, 'TeacherAssistant_Evidence.zip');
     var zipFile = root.createFile(zipBlob);
     zipFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     return { success: true, downloadUrl: 'https://drive.google.com/uc?export=download&id=' + zipFile.getId() };
