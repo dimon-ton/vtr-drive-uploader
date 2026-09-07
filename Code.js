@@ -1,367 +1,352 @@
-// ============================
-// VTR Image & Video Uploader v5
-// Google Apps Script - Code.gs
-// รองรับรูปภาพ + วิดีโอ คุณภาพต้นฉบับ
-// ============================
+// PA 2569 Image Collector
+// Google Apps Script web app for collecting evidence images for a PA presentation.
 
 const DRIVE_FOLDER_ID = '1qaT2i0RPJfLzaFwKEXnVJ27178SRN7Zz';
+const PA_ROOT_NAME = 'PA_2569_Presentation';
+const TEMP_FOLDER_NAME = '_PA_upload_tmp_';
 
-// ขนาดจำกัดต่อ chunk (Apps Script max payload ~50MB แต่ใช้ 30MB ให้ปลอดภัย)
-const CHUNK_SIZE_LIMIT = 30 * 1024 * 1024; // 30MB in bytes
-
-var FOLDER_STRUCTURE = {
-  "org1": {
-    name: "องค์ประกอบที่ 1 - ประสิทธิภาพและประสิทธิผล",
-    children: {
-      "d1": {
-        name: "ด้าน 1 - การจัดการเรียนรู้",
-        children: {
-          "1-1": "1.1 วิเคราะห์หลักสูตร จัดทำรายวิชาและหน่วยการเรียนรู้",
-          "1-2": "1.2 ออกแบบการจัดการเรียนรู้เน้นผู้เรียนเป็นสำคัญ",
-          "1-3": "1.3 จัดกิจกรรมการเรียนรู้",
-          "1-4": "1.4 สื่อ เทคโนโลยี และแหล่งเรียนรู้",
-          "1-5": "1.5 วัดและประเมินผลการเรียนรู้",
-          "1-6": "1.6 จัดบรรยากาศส่งเสริมผู้เรียน",
-          "1-7": "1.7 อบรมบ่มนิสัยคุณธรรม จริยธรรม"
-        }
-      },
-      "d2": {
-        name: "ด้าน 2 - ส่งเสริมและสนับสนุนการจัดการเรียนรู้",
-        children: {
-          "2-1": "2.1 ข้อมูลสารสนเทศของผู้เรียน",
-          "2-2": "2.2 ระบบดูแลช่วยเหลือนักเรียน",
-          "2-3": "2.3 ร่วมปฏิบัติงานวิชาการของสถานศึกษา",
-          "2-4": "2.4 ประสานความร่วมมือกับผู้ปกครอง"
-        }
-      },
-      "d3": {
-        name: "ด้าน 3 - พัฒนาตนเองและวิชาชีพ",
-        children: {
-          "3-1": "3.1 พัฒนาตนเองอย่างเป็นระบบและต่อเนื่อง",
-          "3-2": "3.2 แลกเปลี่ยนเรียนรู้ทางวิชาชีพ",
-          "3-3": "3.3 นำความรู้มาใช้พัฒนาการจัดการเรียนรู้"
-        }
-      }
-    }
+var PA_SLIDES = [
+  {
+    id: 'S01', folder: '01_Cover', title: 'หน้าปก', subtitle: 'ข้อมูลผู้จัดทำและภาพลักษณ์อย่างเป็นทางการ',
+    items: [
+      {id:'S01_Portrait_Teacher', title:'ภาพ Portrait ครู', hint:'ภาพครูแบบเป็นทางการ แนวตั้ง พื้นหลังเรียบร้อย', priority:'A', required:true},
+      {id:'S01_School_Logo', title:'โลโก้โรงเรียน', hint:'ไฟล์ PNG พื้นหลังโปร่งใสหรือภาพความละเอียดสูง', priority:'B', required:true},
+      {id:'S01_Classroom_Background', title:'ภาพบรรยากาศห้องเรียนภาษาอังกฤษ', hint:'ภาพแนวนอนสำหรับใช้เป็นพื้นหลังแบบจาง', priority:'C', required:false}
+    ]
   },
-  "org2": {
-    name: "องค์ประกอบที่ 2 - มีส่วนร่วมพัฒนาการศึกษา",
-    children: {
-      "org2": "งานที่ได้รับมอบหมายจากผู้บังคับบัญชา"
-    }
+  {
+    id: 'S02', folder: '02_Workload', title: 'ภาระงานและหน้าที่รับผิดชอบ', subtitle: 'การสอน การดูแลนักเรียน และงานโรงเรียน',
+    items: [
+      {id:'S02_Teaching_English', title:'ภาพกำลังสอนภาษาอังกฤษ', hint:'เห็นครู นักเรียน และกิจกรรมการเรียนรู้ชัดเจน', priority:'A', required:true},
+      {id:'S02_Homeroom', title:'ภาพโฮมรูมหรือดูแลนักเรียน', hint:'ภาพกิจกรรมประจำชั้นหรือการดูแลช่วยเหลือ', priority:'B', required:true},
+      {id:'S02_School_Duty', title:'ภาพงานโรงเรียน', hint:'ลูกเสือ–เนตรนารี เศรษฐกิจพอเพียง หรือภารกิจที่ได้รับมอบหมาย', priority:'C', required:true}
+    ]
   },
-  "org3": {
-    name: "องค์ประกอบที่ 3 - วินัย คุณธรรม จริยธรรม จรรยาบรรณ",
-    children: {
-      "v-1":  "3.1 ยึดมั่นสถาบันหลักของประเทศ",
-      "v-2":  "3.2 ซื่อสัตย์สุจริต รับผิดชอบต่อหน้าที่",
-      "v-3":  "3.3 กล้าคิด กล้าตัดสินใจ กล้าแสดงออก",
-      "v-4":  "3.4 จิตอาสา จิตสาธารณะ",
-      "v-5":  "3.5 มุ่งผลสัมฤทธิ์ของงาน",
-      "v-6":  "3.6 ปฏิบัติหน้าที่อย่างเป็นธรรม",
-      "v-7":  "3.7 ดำรงตนเป็นแบบอย่างที่ดี",
-      "v-8":  "3.8 เคารพศักดิ์ศรีความเป็นมนุษย์ สิทธิเด็ก",
-      "v-9":  "3.9 ปฏิบัติตามจรรยาบรรณวิชาชีพ",
-      "v-10": "3.10 มีวินัยและรักษาวินัย"
-    }
+  {
+    id: 'S03', folder: '03_Learning_Management', title: 'ด้านที่ 1 การจัดการเรียนรู้', subtitle: 'Teacher Input → Practice → Student Action → Assessment',
+    items: [
+      {id:'S03_Phonics_Teaching_Hero', title:'ภาพหลัก: สอน Phonics นักเรียน ป.1', hint:'ภาพเด่นที่เห็นครูสอนกลุ่มเป้าหมายและสื่อ Phonics', priority:'A', required:true},
+      {id:'S03_Active_Learning', title:'นักเรียนลงมือทำกิจกรรม', hint:'เห็นการมีส่วนร่วม ฝึกเสียง เล่นเกม หรือทำงานร่วมกัน', priority:'A', required:true},
+      {id:'S03_Phonics_Worksheet', title:'นักเรียนใช้ชุดฝึก/ใบงาน Phonics', hint:'เห็นนักเรียนกำลังใช้สื่อจริง ไม่ใช่เฉพาะภาพเอกสาร', priority:'A', required:true},
+      {id:'S03_Student_Reading', title:'นักเรียนอ่านออกเสียง', hint:'ภาพอ่านรายบุคคล หน้าชั้น หรืออ่านกับครู', priority:'A', required:true}
+    ]
+  },
+  {
+    id: 'S04', folder: '04_Student_Support', title: 'ด้านที่ 2 การส่งเสริมและสนับสนุนผู้เรียน', subtitle: 'ข้อมูลผู้เรียน ระบบดูแล งานวิชาการ และผู้ปกครอง',
+    items: [
+      {id:'S04_Home_Visit', title:'ภาพเยี่ยมบ้าน', hint:'ภาพครู นักเรียน และผู้ปกครองในบริบทการเยี่ยมบ้าน', priority:'B', required:true},
+      {id:'S04_Homeroom', title:'ภาพกิจกรรมโฮมรูม', hint:'การพูดคุย ดูแล หรือทำกิจกรรมร่วมกับนักเรียน', priority:'B', required:true},
+      {id:'S04_Parent_Meeting', title:'ภาพประชุม/พูดคุยผู้ปกครอง', hint:'การประสานความร่วมมือเพื่อติดตามผู้เรียน', priority:'B', required:true},
+      {id:'S04_Student_Data', title:'ภาพระบบข้อมูลนักเรียน', hint:'Screenshot Google Form, SDQ หรือสารสนเทศผู้เรียน โดยปิดข้อมูลส่วนตัว', priority:'B', required:true},
+      {id:'S04_Parent_Line', title:'ภาพการสื่อสารกับผู้ปกครอง', hint:'Screenshot LINE โดยปิดชื่อ เบอร์โทร และข้อมูลส่วนตัว', priority:'C', required:false}
+    ]
+  },
+  {
+    id: 'S05', folder: '05_Professional_Development', title: 'ด้านที่ 3 การพัฒนาตนเองและวิชาชีพ', subtitle: 'Learn → Share → Apply',
+    items: [
+      {id:'S05_Training', title:'ภาพเข้าร่วมอบรม', hint:'การอบรมด้านภาษาอังกฤษ เทคโนโลยี หรือการจัดการเรียนรู้', priority:'B', required:true},
+      {id:'S05_PLC', title:'ภาพ PLC', hint:'ภาพแลกเปลี่ยนเรียนรู้กับครูหรือผู้บริหาร', priority:'B', required:true},
+      {id:'S05_Apply_In_Class', title:'ภาพนำความรู้มาใช้สอนจริง', hint:'เชื่อมโยงให้เห็นจากการเรียนรู้สู่ผลที่เกิดในชั้นเรียน', priority:'B', required:true},
+      {id:'S05_Certificate', title:'เกียรติบัตรที่เกี่ยวข้อง', hint:'เลือกเฉพาะที่สัมพันธ์กับงาน 1–2 ใบ', priority:'C', required:false}
+    ]
+  },
+  {
+    id: 'S06', folder: '06_Outcomes', title: 'ผลลัพธ์ตามมาตรฐานตำแหน่ง', subtitle: 'แสดงพัฒนาการ การมีส่วนร่วม และความมั่นใจของผู้เรียน',
+    items: [
+      {id:'S06_Before_Work', title:'ผลงาน/การประเมินก่อนพัฒนา', hint:'เลือกนักเรียนคนเดียวกับภาพหลังพัฒนาเพื่อเปรียบเทียบ', priority:'A', required:true},
+      {id:'S06_After_Work', title:'ผลงาน/การประเมินหลังพัฒนา', hint:'มุมภาพและชนิดหลักฐานควรเทียบกับ Before ได้', priority:'A', required:true},
+      {id:'S06_Student_Confidence', title:'นักเรียนอ่านออกเสียงอย่างมั่นใจ', hint:'เห็นสีหน้า ท่าทาง และการกล้าแสดงออก', priority:'A', required:true},
+      {id:'S06_Result_Chart', title:'กราฟผลลัพธ์', hint:'กราฟสรุปพัฒนาการหรือจำนวนผู้ผ่านเกณฑ์', priority:'A', required:true}
+    ]
+  },
+  {
+    id: 'S07', folder: '07_Challenge_Problem', title: 'ประเด็นท้าทาย: สภาพปัญหา', subtitle: 'หลักฐาน Baseline ก่อนเริ่มใช้ Phonics จริง',
+    items: [
+      {id:'S07_Pretest', title:'นักเรียนทำ Pre-test', hint:'ถ่ายนักเรียน ป.1 กลุ่มเป้าหมาย 3 คนก่อนเริ่มพัฒนา', priority:'A', required:true},
+      {id:'S07_Reading_Assessment', title:'ครูประเมินการอ่านรายบุคคล', hint:'เห็นกระบวนการฟังและบันทึกผลการอ่าน', priority:'A', required:true},
+      {id:'S07_Baseline_Chart', title:'กราฟคะแนนก่อนพัฒนา', hint:'สรุป Baseline ของนักเรียน 3 คน โดยปิดชื่อจริง', priority:'A', required:true},
+      {id:'S07_Problem_WorkSample', title:'ตัวอย่างคำ/แบบฝึกที่ยังอ่านไม่ได้', hint:'ตัวอย่างปัญหาจริงก่อนเรียน Phonics', priority:'C', required:false}
+    ]
+  },
+  {
+    id: 'S08', folder: '08_Challenge_Process', title: 'ประเด็นท้าทาย: วิธีดำเนินการ', subtitle: 'Analyze → Design → Validate → Teach → Monitor → Remediate → Reassess',
+    items: [
+      {id:'S08_Curriculum_Analysis', title:'วิเคราะห์หลักสูตร/แผน', hint:'ภาพการวิเคราะห์หลักสูตร หน่วย หรือแผนการจัดการเรียนรู้', priority:'B', required:true},
+      {id:'S08_Academic_Review', title:'ฝ่ายวิชาการตรวจแผนหรือสื่อ', hint:'เห็นการตรวจสอบ ให้คำแนะนำ หรือรับรองคุณภาพ', priority:'B', required:true},
+      {id:'S08_Phonics_Activity', title:'จัดกิจกรรม Phonics', hint:'เห็นครูและนักเรียนกลุ่มเป้าหมายในกระบวนการจริง', priority:'A', required:true},
+      {id:'S08_Phonics_Practice', title:'นักเรียนฝึกเสียง/ผสมเสียง', hint:'เน้นการลงมือฝึกและสื่อที่ใช้', priority:'A', required:true},
+      {id:'S08_Peer_Tutoring', title:'เพื่อนช่วยเพื่อน', hint:'นักเรียนช่วยกันฝึกอ่านหรือให้คำแนะนำ', priority:'A', required:true},
+      {id:'S08_Remedial_Teaching', title:'สอนซ่อมเสริม', hint:'ภาพการพัฒนารายบุคคลหรือนักเรียนที่ยังไม่ผ่านเกณฑ์', priority:'A', required:true},
+      {id:'S08_Excel_Tracking', title:'ตารางติดตามผลใน Excel', hint:'Screenshot คะแนนและการติดตาม โดยปิดชื่อหรือใช้รหัสนักเรียน', priority:'C', required:false}
+    ]
+  },
+  {
+    id: 'S09', folder: '09_Challenge_Results', title: 'ประเด็นท้าทาย: ผลลัพธ์และผลกระทบ', subtitle: 'From decoding difficulty → confident English reading',
+    items: [
+      {id:'S09_Posttest', title:'นักเรียนทำ Post-test', hint:'ใช้กลุ่มเป้าหมาย 3 คนเดิมและบริบทที่เทียบกับ Pre-test ได้', priority:'A', required:true},
+      {id:'S09_After_Reading', title:'นักเรียนอ่านภาษาอังกฤษหลังพัฒนา', hint:'ภาพอ่านคำศัพท์หรือข้อความหลังจบกระบวนการ', priority:'A', required:true},
+      {id:'S09_Before_After_Chart', title:'กราฟเปรียบเทียบก่อน–หลัง', hint:'Pre-test, Post-test, Growth และจำนวนคนผ่านเกณฑ์ 70%', priority:'A', required:true},
+      {id:'S09_Confidence', title:'นักเรียนกล้าอ่าน/พูดหน้าชั้น', hint:'หลักฐานเชิงคุณภาพด้านความมั่นใจและการแสดงออก', priority:'A', required:true},
+      {id:'S09_Satisfaction', title:'กราฟความพึงพอใจ', hint:'Infographic หรือกราฟสรุป หากมีการเก็บข้อมูล', priority:'C', required:false}
+    ]
+  },
+  {
+    id: 'S10', folder: '10_Summary', title: 'สรุปผลและร่องรอยหลักฐาน', subtitle: 'ภาพรวมสิ่งที่ทำ สิ่งที่ผู้เรียนได้รับ และการพัฒนาต่อไป',
+    items: [
+      {id:'S10_Phonics_Class', title:'ภาพชั้นเรียน Phonics', hint:'ภาพบรรยากาศรวมที่สื่อถึงการเรียนรู้อย่างมีความสุข', priority:'A', required:true},
+      {id:'S10_Student_Work', title:'ภาพผลงานนักเรียน', hint:'เลือกผลงานเด่นที่สะท้อนพัฒนาการ', priority:'A', required:true},
+      {id:'S10_Reading_Assessment', title:'ภาพประเมินการอ่าน', hint:'ภาพการติดตามผลหรือประเมินรายบุคคล', priority:'A', required:true},
+      {id:'S10_PLC', title:'ภาพ PLC', hint:'ภาพสรุปการแลกเปลี่ยนและขยายผลทางวิชาชีพ', priority:'B', required:true},
+      {id:'S10_Home_Visit', title:'ภาพเยี่ยมบ้าน', hint:'ภาพการสนับสนุนผู้เรียนร่วมกับครอบครัว', priority:'B', required:true},
+      {id:'S10_Student_Success', title:'ภาพความสำเร็จของนักเรียน', hint:'ภาพเด่นหลังพัฒนา แสดงความมั่นใจหรือความภาคภูมิใจ', priority:'A', required:true},
+      {id:'S10_QR_Evidence', title:'QR Code หลักฐานฉบับเต็ม', hint:'QR ที่ทดสอบแล้วว่าเปิดโฟลเดอร์หรือแฟ้มหลักฐานได้', priority:'C', required:true}
+    ]
   }
-};
+];
 
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
-    .setTitle('อัปโหลดหลักฐานครูผู้ช่วย')
+    .setTitle('คลังภาพ PA 2569')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover');
 }
 
-// ===== Init Folders =====
-function initFolders() {
-  var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-  for (var orgKey in FOLDER_STRUCTURE) {
-    var orgDef = FOLDER_STRUCTURE[orgKey];
-    var orgFolder = getOrCreateFolder(root, orgDef.name);
-    for (var childKey in orgDef.children) {
-      var child = orgDef.children[childKey];
-      if (typeof child === 'string') {
-        getOrCreateFolder(orgFolder, child);
-      } else {
-        var danFolder = getOrCreateFolder(orgFolder, child.name);
-        for (var topicKey in child.children) {
-          getOrCreateFolder(danFolder, child.children[topicKey]);
-        }
-      }
-    }
-  }
-  Logger.log('โครงสร้างโฟลเดอร์สร้างเสร็จแล้ว');
+function getPaRoot() {
+  return getOrCreateFolder(DriveApp.getFolderById(DRIVE_FOLDER_ID), PA_ROOT_NAME);
 }
 
 function getOrCreateFolder(parent, name) {
-  var iter = parent.getFoldersByName(name);
-  if (iter.hasNext()) return iter.next();
-  return parent.createFolder(name);
+  var iterator = parent.getFoldersByName(name);
+  return iterator.hasNext() ? iterator.next() : parent.createFolder(name);
 }
 
-function getTopicFolder(topicId) {
-  var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-  for (var orgKey in FOLDER_STRUCTURE) {
-    var orgDef = FOLDER_STRUCTURE[orgKey];
-    for (var childKey in orgDef.children) {
-      var child = orgDef.children[childKey];
-      if (typeof child === 'string') {
-        if (childKey === topicId) {
-          return getOrCreateFolder(getOrCreateFolder(root, orgDef.name), child);
-        }
-      } else {
-        for (var topicKey in child.children) {
-          if (topicKey === topicId) {
-            var orgFolder = getOrCreateFolder(root, orgDef.name);
-            var danFolder = getOrCreateFolder(orgFolder, child.name);
-            return getOrCreateFolder(danFolder, child.children[topicKey]);
-          }
-        }
+function findItem(itemId) {
+  for (var i = 0; i < PA_SLIDES.length; i++) {
+    for (var j = 0; j < PA_SLIDES[i].items.length; j++) {
+      if (PA_SLIDES[i].items[j].id === itemId) {
+        return {slide: PA_SLIDES[i], item: PA_SLIDES[i].items[j]};
       }
     }
   }
-  return root;
+  return null;
 }
 
-// ===== Upload (ไฟล์เล็ก < 30MB) =====
-function uploadFile(formData) {
+function getItemFolder(itemId) {
+  var found = findItem(itemId);
+  if (!found) throw new Error('ไม่พบหัวข้อภาพ: ' + itemId);
+  return getOrCreateFolder(getPaRoot(), found.slide.folder);
+}
+
+function initPaFolders() {
+  var root = getPaRoot();
+  for (var i = 0; i < PA_SLIDES.length; i++) getOrCreateFolder(root, PA_SLIDES[i].folder);
+  return {success:true, folderUrl:root.getUrl()};
+}
+
+function getPaData() {
   try {
-    var folder = getTopicFolder(formData.topicId);
-    var base64 = formData.dataUrl.split(',')[1];
-    var decoded = Utilities.base64Decode(base64);
-    var blob = Utilities.newBlob(decoded, formData.mimeType, formData.fileName);
+    var root = getPaRoot();
+    initPaFolders();
+    return {success:true, slides:PA_SLIDES, files:getPaFiles_(), folderUrl:root.getUrl()};
+  } catch (error) {
+    return {success:false, error:String(error)};
+  }
+}
 
-    var ext = formData.fileName.split('.').pop();
-    var timestamp = new Date().getTime();
-    var newFileName = formData.topicId + '_' + timestamp + '.' + ext;
-    blob.setName(newFileName);
+function safeExtension(name, mimeType) {
+  var match = String(name || '').match(/\.([A-Za-z0-9]{1,8})$/);
+  if (match) return match[1].toLowerCase();
+  var map = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/heic':'heic','image/heif':'heif'};
+  return map[mimeType] || 'jpg';
+}
 
-    var file = folder.createFile(blob);
-    // Make file accessible to anyone with the link so thumbnail URLs load
-    // on all browsers (Safari on iPad blocks cross-site auth cookies).
+function makeFileName(itemId, originalName, mimeType) {
+  var stamp = Utilities.formatDate(new Date(), 'Asia/Bangkok', 'yyyyMMdd_HHmmss_SSS');
+  return itemId + '_' + stamp + '.' + safeExtension(originalName, mimeType);
+}
+
+function cleanDescription(value) {
+  return String(value || '').trim().slice(0, 1000);
+}
+
+function fileResult(file, itemId) {
+  var mime = file.getMimeType();
+  var id = file.getId();
+  return {
+    id:id,
+    itemId:itemId,
+    name:file.getName(),
+    mimeType:mime,
+    size:file.getSize(),
+    sizeText:formatSize(file.getSize()),
+    description:file.getDescription() || '',
+    thumbnail:'https://drive.google.com/thumbnail?id=' + id + '&sz=w600',
+    viewUrl:'https://drive.google.com/file/d/' + id + '/view'
+  };
+}
+
+function uploadPaFile(formData) {
+  try {
+    var found = findItem(formData.itemId);
+    if (!found) throw new Error('หัวข้อภาพไม่ถูกต้อง');
+    if (String(formData.mimeType || '').indexOf('image/') !== 0) throw new Error('รองรับเฉพาะไฟล์รูปภาพ');
+    var base64 = String(formData.dataUrl || '').split(',')[1];
+    if (!base64) throw new Error('ไม่พบข้อมูลรูปภาพ');
+    var bytes = Utilities.base64Decode(base64);
+    var fileName = makeFileName(formData.itemId, formData.fileName, formData.mimeType);
+    var blob = Utilities.newBlob(bytes, formData.mimeType, fileName);
+    var file = getItemFolder(formData.itemId).createFile(blob);
+    var description = cleanDescription(formData.description);
+    if (description) file.setDescription(description);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    var fileId = file.getId();
-    var isVideo = formData.mimeType.indexOf('video') === 0;
-
-    return {
-      success: true,
-      fileId: fileId,
-      fileName: newFileName,
-      isVideo: isVideo,
-      mimeType: formData.mimeType,
-      thumbnail: isVideo
-        ? 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400'
-        : 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400',
-      previewUrl: isVideo
-        ? 'https://drive.google.com/file/d/' + fileId + '/preview'
-        : null
-    };
-  } catch (e) {
-    return { success: false, error: e.toString() };
+    return {success:true, file:fileResult(file, formData.itemId)};
+  } catch (error) {
+    return {success:false, error:String(error)};
   }
 }
 
-// ===== Chunked Upload (ไฟล์ใหญ่) =====
-// ใช้ DriveApp ล้วน — ไม่ใช้ UrlFetchApp เพื่อรองรับ ANYONE_ANONYMOUS web app
-//
-// วิธีการ:
-//   startChunkedUpload → สร้าง temp folder ใน Drive, return sessionId + fileName
-//   uploadChunk        → บันทึกแต่ละ chunk เป็นไฟล์เล็กๆ ใน temp folder
-//                        chunk สุดท้าย: รวมทุก chunk → สร้างไฟล์จริง → ลบ temp folder
-
-var TEMP_FOLDER_NAME = '_upload_tmp_';
-
-function getTempFolder() {
-  var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-  var iter = root.getFoldersByName(TEMP_FOLDER_NAME);
-  return iter.hasNext() ? iter.next() : root.createFolder(TEMP_FOLDER_NAME);
+function getPaFiles_() {
+  var result = [];
+  for (var i = 0; i < PA_SLIDES.length; i++) {
+    var folder = getOrCreateFolder(getPaRoot(), PA_SLIDES[i].folder);
+    var validIds = {};
+    for (var j = 0; j < PA_SLIDES[i].items.length; j++) validIds[PA_SLIDES[i].items[j].id] = true;
+    var files = folder.getFiles();
+    while (files.hasNext()) {
+      var file = files.next();
+      if (file.getName().slice(-4).toLowerCase() === '.zip') continue;
+      var itemId = '';
+      var name = file.getName();
+      for (var candidate in validIds) {
+        if (name.indexOf(candidate + '_') === 0) { itemId = candidate; break; }
+      }
+      if (!itemId) continue;
+      try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (ignore) {}
+      result.push(fileResult(file, itemId));
+    }
+  }
+  result.sort(function(a,b){ return b.name.localeCompare(a.name); });
+  return result;
 }
 
-function startChunkedUpload(formData) {
+function deletePaFile(fileId) {
   try {
-    var ext = formData.fileName.split('.').pop();
-    var timestamp = new Date().getTime();
-    var idKey = formData.topicId || formData.sectionId || 'file';
-    var newFileName = idKey + '_' + timestamp + '.' + ext;
+    DriveApp.getFileById(fileId).setTrashed(true);
+    return {success:true};
+  } catch (error) {
+    return {success:false, error:String(error)};
+  }
+}
 
-    // สร้าง session folder ใน temp เพื่อเก็บ chunks
-    var sessionId = idKey + '_' + timestamp;
-    var tmpFolder = getTempFolder();
-    tmpFolder.createFolder(sessionId);
-
-    // เก็บ metadata ใน PropertiesService
-    var props = PropertiesService.getScriptProperties();
-    props.setProperty('session_' + sessionId, JSON.stringify({
-      fileName: newFileName,
-      mimeType: formData.mimeType,
-      topicId: formData.topicId || '',
-      sectionId: formData.sectionId || '',
-      description: cleanDescription(formData.description),
-      totalChunks: formData.totalChunks || 0,
-      finalized: false
+function startPaChunkedUpload(meta) {
+  try {
+    if (!findItem(meta.itemId)) throw new Error('หัวข้อภาพไม่ถูกต้อง');
+    if (String(meta.mimeType || '').indexOf('image/') !== 0) throw new Error('รองรับเฉพาะไฟล์รูปภาพ');
+    var sessionId = meta.itemId + '_' + new Date().getTime() + '_' + Math.floor(Math.random()*100000);
+    var tempRoot = getOrCreateFolder(getPaRoot(), TEMP_FOLDER_NAME);
+    tempRoot.createFolder(sessionId);
+    PropertiesService.getScriptProperties().setProperty('pa_' + sessionId, JSON.stringify({
+      itemId:meta.itemId,
+      fileName:makeFileName(meta.itemId, meta.fileName, meta.mimeType),
+      mimeType:meta.mimeType,
+      description:cleanDescription(meta.description),
+      totalChunks:Number(meta.totalChunks || 0),
+      finalized:false
     }));
-
-    return { success: true, sessionId: sessionId, fileName: newFileName };
-  } catch (e) {
-    return { success: false, error: e.toString() };
+    return {success:true, sessionId:sessionId};
+  } catch (error) {
+    return {success:false, error:String(error)};
   }
 }
 
-// data: { sessionId, chunk (base64), chunkIndex, mimeType }
-// Parallel-safe: assembly is triggered when file count in session folder === totalChunks,
-// not by an "isLast" flag, so chunks can arrive in any order.
-function uploadChunk(data) {
+function uploadPaChunk(data) {
+  var lock;
   try {
     var props = PropertiesService.getScriptProperties();
-    var metaKey = 'session_' + data.sessionId;
-    var rawMeta = props.getProperty(metaKey);
-    if (!rawMeta) return { success: false, error: 'Session not found: ' + data.sessionId };
-    var meta = JSON.parse(rawMeta);
+    var key = 'pa_' + data.sessionId;
+    var raw = props.getProperty(key);
+    if (!raw) throw new Error('ไม่พบ upload session');
+    var meta = JSON.parse(raw);
+    var tempRoot = getOrCreateFolder(getPaRoot(), TEMP_FOLDER_NAME);
+    var folders = tempRoot.getFoldersByName(data.sessionId);
+    if (!folders.hasNext()) throw new Error('ไม่พบโฟลเดอร์ชั่วคราว');
+    var sessionFolder = folders.next();
+    var chunkName = 'chunk_' + ('000000' + data.chunkIndex).slice(-6);
+    sessionFolder.createFile(Utilities.newBlob(Utilities.base64Decode(data.chunk), 'application/octet-stream', chunkName));
 
-    // บันทึก chunk ลงใน temp folder ของ session นี้
-    var tmpFolder = getTempFolder();
-    var iter = tmpFolder.getFoldersByName(data.sessionId);
-    if (!iter.hasNext()) return { success: false, error: 'Session folder missing' };
-    var sessionFolder = iter.next();
-
-    var decoded = Utilities.base64Decode(data.chunk);
-    var chunkBlob = Utilities.newBlob(decoded, 'application/octet-stream', 'chunk_' + String(data.chunkIndex).padStart(6, '0'));
-    sessionFolder.createFile(chunkBlob);
-
-    // นับจำนวน chunk ที่เก็บใน session folder
     var count = 0;
-    var countIter = sessionFolder.getFiles();
-    while (countIter.hasNext()) { countIter.next(); count++; }
+    var counter = sessionFolder.getFiles();
+    while (counter.hasNext()) { counter.next(); count++; }
+    if (count < meta.totalChunks) return {success:true, complete:false};
 
-    if (count < meta.totalChunks) {
-      return { success: true, complete: false };
-    }
+    lock = LockService.getScriptLock();
+    lock.waitLock(30000);
+    raw = props.getProperty(key);
+    if (!raw) return {success:true, complete:true, alreadyFinalized:true};
+    meta = JSON.parse(raw);
+    if (meta.finalized) return {success:true, complete:false};
+    meta.finalized = true;
+    props.setProperty(key, JSON.stringify(meta));
+    lock.releaseLock(); lock = null;
 
-    // --- ครบทุก chunk แล้ว: ต้องรวมไฟล์ ---
-    // Lock เพื่อกันไม่ให้สอง chunk ที่มาถึงพร้อมกันทั้งคู่ trigger assembly
-    var lock = LockService.getScriptLock();
-    try {
-      lock.waitLock(30000);
-    } catch (lockErr) {
-      return { success: true, complete: false };
-    }
-    try {
-      // อ่าน meta ใหม่หลัง lock — ถ้ามี chunk อื่น finalized ไปแล้ว ให้บอก client ว่าเสร็จ
-      var freshRaw = props.getProperty(metaKey);
-      if (!freshRaw) {
-        // session ถูกลบไปแล้ว = finalize เสร็จแล้ว
-        return { success: true, complete: true, alreadyFinalized: true };
-      }
-      var freshMeta = JSON.parse(freshRaw);
-      if (freshMeta.finalized) {
-        return { success: true, complete: true, alreadyFinalized: true };
-      }
-      freshMeta.finalized = true;
-      props.setProperty(metaKey, JSON.stringify(freshMeta));
-      meta = freshMeta;
-    } finally {
-      lock.releaseLock();
-    }
-
-    // --- รวมทุก chunk แล้วสร้างไฟล์จริง ---
-    // เรียง chunks ตามชื่อ (chunk_000000, chunk_000001, ...)
-    var chunkFiles = [];
-    var allFiles = sessionFolder.getFiles();
-    while (allFiles.hasNext()) chunkFiles.push(allFiles.next());
-    chunkFiles.sort(function(a, b) { return a.getName() < b.getName() ? -1 : 1; });
-
-    // รวม bytes แบบ O(n) ด้วย Uint8Array (แทนที่ push byte ทีละตัวซึ่งเป็น O(n²))
-    var byteArrays = new Array(chunkFiles.length);
-    var total = 0;
-    for (var i = 0; i < chunkFiles.length; i++) {
-      byteArrays[i] = chunkFiles[i].getBlob().getBytes();
+    var chunks = [];
+    var iterator = sessionFolder.getFiles();
+    while (iterator.hasNext()) chunks.push(iterator.next());
+    chunks.sort(function(a,b){ return a.getName().localeCompare(b.getName()); });
+    var byteArrays = [], total = 0;
+    for (var i = 0; i < chunks.length; i++) {
+      byteArrays[i] = chunks[i].getBlob().getBytes();
       total += byteArrays[i].length;
     }
-    var combined = new Uint8Array(total);
-    var offset = 0;
-    for (var k = 0; k < byteArrays.length; k++) {
-      combined.set(byteArrays[k], offset);
-      offset += byteArrays[k].length;
+    var combined = new Uint8Array(total), offset = 0;
+    for (var j = 0; j < byteArrays.length; j++) {
+      combined.set(byteArrays[j], offset);
+      offset += byteArrays[j].length;
     }
-
-    // สร้างไฟล์จริงในโฟลเดอร์ปลายทาง
-    var destFolder = meta.sectionId ? getWsFolder(meta.sectionId) : getTopicFolder(meta.topicId);
-    var finalBlob = Utilities.newBlob(combined, meta.mimeType, meta.fileName);
-    var file = destFolder.createFile(finalBlob);
-    var description = maybeSetDescription(file, meta.description);
+    var file = getItemFolder(meta.itemId).createFile(Utilities.newBlob(combined, meta.mimeType, meta.fileName));
+    if (meta.description) file.setDescription(meta.description);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    var fileId = file.getId();
-
-    // ลบ temp session folder และ property
     sessionFolder.setTrashed(true);
-    props.deleteProperty(metaKey);
-
-    var isVideo = meta.mimeType.indexOf('video') === 0;
-    return {
-      success: true,
-      complete: true,
-      fileId: fileId,
-      fileName: meta.fileName,
-      isVideo: isVideo,
-      mimeType: meta.mimeType,
-      description: description,
-      sizeText: formatSize(file.getSize()),
-      thumbnail: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400',
-      previewUrl: isVideo ? 'https://drive.google.com/file/d/' + fileId + '/preview' : null
-    };
-  } catch (e) {
-    return { success: false, error: e.toString() };
+    props.deleteProperty(key);
+    return {success:true, complete:true, file:fileResult(file, meta.itemId)};
+  } catch (error) {
+    if (lock) try { lock.releaseLock(); } catch (ignore) {}
+    return {success:false, error:String(error)};
   }
 }
 
-// ===== Get files =====
-function getUploadedFiles() {
+function createPaZip() {
   try {
+    var blobs = [];
+    collectBlobs_(getPaRoot(), '', blobs);
+    if (!blobs.length) return {success:false, error:'ยังไม่มีรูปภาพ'};
     var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    var result = [];
-    collectFiles(root, result);
-    result.sort(function(a, b) { return a.name.localeCompare(b.name); });
-    return result;
-  } catch (e) {
-    return [];
+    var old = root.getFilesByName('PA_2569_Presentation_Images.zip');
+    while (old.hasNext()) old.next().setTrashed(true);
+    var zip = root.createFile(Utilities.zip(blobs, 'PA_2569_Presentation_Images.zip'));
+    zip.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return {success:true, downloadUrl:'https://drive.google.com/uc?export=download&id=' + zip.getId()};
+  } catch (error) {
+    return {success:false, error:String(error)};
   }
 }
 
-function collectFiles(folder, result) {
+function collectBlobs_(folder, prefix, blobs) {
+  if (folder.getName() === TEMP_FOLDER_NAME) return;
   var files = folder.getFiles();
   while (files.hasNext()) {
     var file = files.next();
-    var name = file.getName();
-    if (name.endsWith('.zip')) continue;
-
-    var id = file.getId();
-    // Ensure link-sharing is on so thumbnail URLs load without auth cookies
-    // (fixes broken thumbnails on iPad Safari / browsers with cross-site cookie blocking).
-    try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch(e) {}
-    var mime = file.getMimeType();
-    var parts = name.split('_');
-    parts.pop();
-    var topicId = parts.join('_');
-    var isVideo = mime.indexOf('video') === 0;
-    var sizeBytes = file.getSize();
-
-    result.push({
-      name: name,
-      id: id,
-      topicId: topicId,
-      mimeType: mime,
-      isVideo: isVideo,
-      size: sizeBytes,
-      sizeText: formatSize(sizeBytes),
-      description: file.getDescription() || '',
-      thumbnail: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400',
-      previewUrl: isVideo ? 'https://drive.google.com/file/d/' + id + '/preview' : null
-    });
+    if (file.getName().slice(-4).toLowerCase() === '.zip') continue;
+    var blob = file.getBlob();
+    blob.setName(prefix ? prefix + '/' + file.getName() : file.getName());
+    blobs.push(blob);
   }
-  var subs = folder.getFolders();
-  while (subs.hasNext()) { collectFiles(subs.next(), result); }
+  var folders = folder.getFolders();
+  while (folders.hasNext()) {
+    var sub = folders.next();
+    if (sub.getName() === TEMP_FOLDER_NAME) continue;
+    collectBlobs_(sub, (prefix ? prefix + '/' : '') + sub.getName(), blobs);
+  }
 }
 
 function formatSize(bytes) {
@@ -369,232 +354,4 @@ function formatSize(bytes) {
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
   return (bytes / 1073741824).toFixed(2) + ' GB';
-}
-
-function cleanDescription(value) {
-  return String(value || '').trim().slice(0, 1000);
-}
-
-function maybeSetDescription(file, description) {
-  var text = cleanDescription(description);
-  if (text) file.setDescription(text);
-  return text;
-}
-
-// ===== Delete =====
-function deleteFile(fileId) {
-  try {
-    DriveApp.getFileById(fileId).setTrashed(true);
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: e.toString() };
-  }
-}
-
-// ===== Replace =====
-function replaceFile(formData) {
-  try {
-    if (formData.oldFileId) DriveApp.getFileById(formData.oldFileId).setTrashed(true);
-    return uploadFile(formData);
-  } catch (e) {
-    return { success: false, error: e.toString() };
-  }
-}
-
-// ===== ZIP =====
-function createZip() {
-  try {
-    var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    var blobs = [];
-    collectBlobs(root, '', blobs);
-
-    if (blobs.length === 0) return { success: false, error: 'ไม่มีไฟล์' };
-
-    var oldFiles = root.getFilesByName('VTR_Slide_Images.zip');
-    while (oldFiles.hasNext()) { oldFiles.next().setTrashed(true); }
-
-    var zipBlob = Utilities.zip(blobs, 'VTR_Slide_Images.zip');
-    var zipFile = root.createFile(zipBlob);
-    zipFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-
-    return {
-      success: true,
-      downloadUrl: 'https://drive.google.com/uc?export=download&id=' + zipFile.getId()
-    };
-  } catch (e) {
-    return { success: false, error: e.toString() };
-  }
-}
-
-// ===== Teacher Assistant Evaluation Folder Structure =====
-// โครงสร้างอัปโหลดอิงจากไฟล์ pptx_topics_outline.md
-var WS_ROOT_NAME = 'หลักฐานประเมินครูผู้ช่วย_ตามหัวข้อ';
-var WS_SECTIONS = {
-  'd1': {
-    name: 'ด้านที่ 1 การปฏิบัติตน',
-    children: ['t1-1', 't1-2', 't1-3', 't1-4', 't1-5', 't1-6']
-  },
-  'd2': {
-    name: 'ด้านที่ 2 การปฏิบัติงาน',
-    children: ['t2-1', 't2-2', 't2-3', 't2-4', 't2-5', 't2-6']
-  }
-};
-var WS_FOLDERS = {
-  't1-1': '1.1 วินัยและการรักษาวินัย',
-  't1-2': '1.2 คุณธรรม จริยธรรม',
-  't1-3': '1.3 จรรยาบรรณวิชาชีพ',
-  't1-4': '1.4 การดำรงชีวิตตามหลักปรัชญาเศรษฐกิจพอเพียง',
-  't1-5': '1.5 จิตวิญญาณความเป็นครู',
-  't1-6': '1.6 จิตสำนึกความรับผิดชอบในวิชาชีพครู',
-  't2-1': '2.1 การจัดการเรียนการสอน',
-  't2-2': '2.2 การบริหารจัดการชั้นเรียน',
-  't2-3': '2.3 การพัฒนาตนเอง',
-  't2-4': '2.4 การทำงานเป็นทีม',
-  't2-5': '2.5 งานกิจกรรมตามภารกิจบริหารงานของสถานศึกษา',
-  't2-6': '2.6 การใช้ภาษาและเทคโนโลยี'
-};
-
-function getSectionIdForWs(sectionId) {
-  for (var secKey in WS_SECTIONS) {
-    var children = WS_SECTIONS[secKey].children || [];
-    if (children.indexOf(sectionId) !== -1) return secKey;
-  }
-  return '';
-}
-
-function getWsRoot() {
-  var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-  return getOrCreateFolder(root, WS_ROOT_NAME);
-}
-
-function getWsFolder(sectionId) {
-  var topicName = WS_FOLDERS[sectionId];
-  if (!topicName) return getWsRoot();
-  var secId = getSectionIdForWs(sectionId);
-  var parent = getWsRoot();
-  if (secId && WS_SECTIONS[secId]) {
-    parent = getOrCreateFolder(parent, WS_SECTIONS[secId].name);
-  }
-  return getOrCreateFolder(parent, topicName);
-}
-
-function initWsFolders() {
-  for (var secKey in WS_SECTIONS) {
-    var sec = WS_SECTIONS[secKey];
-    var secFolder = getOrCreateFolder(getWsRoot(), sec.name);
-    for (var i = 0; i < sec.children.length; i++) {
-      var sid = sec.children[i];
-      if (WS_FOLDERS[sid]) getOrCreateFolder(secFolder, WS_FOLDERS[sid]);
-    }
-  }
-  return { success: true, message: 'สร้างโครงสร้างโฟลเดอร์ประเมินครูผู้ช่วยเสร็จแล้ว' };
-}
-
-function uploadWsFile(formData) {
-  try {
-    var folder = getWsFolder(formData.sectionId);
-    var base64 = formData.dataUrl.split(',')[1];
-    var decoded = Utilities.base64Decode(base64);
-    var blob = Utilities.newBlob(decoded, formData.mimeType, formData.fileName);
-    var ext = formData.fileName.split('.').pop();
-    var timestamp = new Date().getTime();
-    var newFileName = formData.sectionId + '_' + timestamp + '.' + ext;
-    blob.setName(newFileName);
-    var file = folder.createFile(blob);
-    var description = maybeSetDescription(file, formData.description);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    var fileId = file.getId();
-    var isVideo = formData.mimeType.indexOf('video') === 0;
-    return {
-      success: true,
-      fileId: fileId,
-      fileName: newFileName,
-      isVideo: isVideo,
-      mimeType: formData.mimeType,
-      description: description,
-      sizeText: formatSize(file.getSize()),
-      thumbnail: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400',
-      previewUrl: isVideo ? 'https://drive.google.com/file/d/' + fileId + '/preview' : null
-    };
-  } catch (e) {
-    return { success: false, error: e.toString() };
-  }
-}
-
-function replaceWsFile(formData) {
-  try {
-    if (formData.oldFileId) DriveApp.getFileById(formData.oldFileId).setTrashed(true);
-    return uploadWsFile(formData);
-  } catch (e) {
-    return { success: false, error: e.toString() };
-  }
-}
-
-function getWsFiles() {
-  try {
-    var result = [];
-    for (var sid in WS_FOLDERS) {
-      var sub = getWsFolder(sid);
-      var files = sub.getFiles();
-      while (files.hasNext()) {
-        var file = files.next();
-        if (file.getName().endsWith('.zip')) continue;
-        var id = file.getId();
-        try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch(e) {}
-        var mime = file.getMimeType();
-        var isVideo = mime.indexOf('video') === 0;
-        result.push({
-          name: file.getName(),
-          id: id,
-          sectionId: sid,
-          mimeType: mime,
-          isVideo: isVideo,
-          size: file.getSize(),
-          sizeText: formatSize(file.getSize()),
-          description: file.getDescription() || '',
-          thumbnail: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400',
-          previewUrl: isVideo ? 'https://drive.google.com/file/d/' + id + '/preview' : null
-        });
-      }
-    }
-    result.sort(function(a, b) { return a.name.localeCompare(b.name); });
-    return result;
-  } catch (e) {
-    return [];
-  }
-}
-
-function createWsZip() {
-  try {
-    var wsRoot = getWsRoot();
-    var blobs = [];
-    collectBlobs(wsRoot, '', blobs);
-    if (blobs.length === 0) return { success: false, error: 'ไม่มีไฟล์' };
-    var root = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    var oldFiles = root.getFilesByName('TeacherAssistant_Evidence.zip');
-    while (oldFiles.hasNext()) { oldFiles.next().setTrashed(true); }
-    var zipBlob = Utilities.zip(blobs, 'TeacherAssistant_Evidence.zip');
-    var zipFile = root.createFile(zipBlob);
-    zipFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return { success: true, downloadUrl: 'https://drive.google.com/uc?export=download&id=' + zipFile.getId() };
-  } catch (e) {
-    return { success: false, error: e.toString() };
-  }
-}
-
-function collectBlobs(folder, prefix, blobs) {
-  var files = folder.getFiles();
-  while (files.hasNext()) {
-    var file = files.next();
-    if (file.getName().endsWith('.zip')) continue;
-    var blob = file.getBlob();
-    var zipName = prefix ? prefix + '/' + file.getName() : file.getName();
-    blob.setName(zipName);
-    blobs.push(blob);
-  }
-  var subs = folder.getFolders();
-  while (subs.hasNext()) {
-    var sub = subs.next();
-    collectBlobs(sub, (prefix ? prefix + '/' : '') + sub.getName(), blobs);
-  }
 }

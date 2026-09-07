@@ -1,674 +1,210 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="th">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
-    *{margin:0;padding:0;box-sizing:border-box}
-    :root{
-      --bg:#0c141c;--sf:#141e2a;--card:#1a2836;--card2:#1f3042;
-      --ac:#4fc3f7;--ac2:#81d4fa;--gn:#66bb6a;--or:#ffa726;--rd:#ef5350;
-      --tx:#dfe6ed;--dm:#607888;--bd:#24343f;
-    }
-    body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
-
-    .hd{background:linear-gradient(160deg,#162636,#0e1c2c);border-bottom:1px solid var(--bd);padding:18px 16px;text-align:center;position:sticky;top:0;z-index:100}
-    .hd h1{font-size:18px;font-weight:700;color:var(--ac)}
-    .hd p{font-size:11px;color:var(--dm);margin-top:2px}
-
-    /* image hints */
-    .hints{margin-top:8px;padding-left:46px;display:flex;flex-wrap:wrap;gap:4px}
-    .hint{font-size:10px;padding:2px 9px;border-radius:10px;background:rgba(255,167,38,.08);color:var(--or);border:1px solid rgba(255,167,38,.2)}
-
-    .st{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding:10px 16px;background:var(--sf);border-bottom:1px solid var(--bd);font-size:12px}
-    .st span{color:var(--ac);font-weight:700}
-
-    .act{display:flex;justify-content:center;gap:8px;padding:10px 16px;background:var(--sf);border-bottom:1px solid var(--bd)}
-    .btn{padding:8px 16px;border:none;border-radius:7px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
-    .btn:disabled{opacity:.3;cursor:not-allowed}
-    .btn-p{background:var(--ac);color:#0c141c}
-    .btn-p:hover:not(:disabled){background:var(--ac2)}
-    .btn-g{background:transparent;color:var(--dm);border:1px solid var(--bd)}
-    .btn-g:hover{border-color:var(--ac);color:var(--ac)}
-
-    .oh{padding:16px;background:linear-gradient(135deg,rgba(79,195,247,.08),transparent);border-bottom:1px solid var(--bd)}
-    .ol{font-size:11px;font-weight:600;color:var(--ac);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-    .ot{font-size:15px;font-weight:700}
-
-    .dh{padding:10px 16px;font-size:13px;font-weight:600;color:var(--ac2);background:rgba(79,195,247,.03);border-bottom:1px solid var(--bd)}
-
-    .tc{padding:14px 16px;border-bottom:1px solid var(--bd);transition:background .1s}
-    .tc:hover{background:var(--card2)}
-    .th{display:flex;gap:10px;align-items:flex-start}
-    .tn{flex-shrink:0;min-width:36px;height:36px;border-radius:8px;background:rgba(79,195,247,.1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ac);border:1px solid rgba(79,195,247,.15);padding:0 6px}
-    .tb{flex:1;min-width:0}
-    .tt{font-size:13px;line-height:1.6}
-    .tm{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center}
-    .bd{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
-    .bd-ok{background:rgba(102,187,106,.12);color:var(--gn)}
-    .bd-no{background:rgba(96,120,136,.12);color:var(--dm)}
-
-    /* Gallery */
-    .gl{display:flex;gap:6px;margin-top:10px;padding-left:46px;flex-wrap:wrap;align-items:flex-start}
-    .gi{position:relative;border-radius:7px;overflow:hidden;border:2px solid var(--bd);cursor:pointer;flex-shrink:0;transition:border-color .15s;width:80px;height:80px}
-    .gi:hover{border-color:var(--ac)}
-    .gi img,.gi video{width:100%;height:100%;object-fit:cover;display:block}
-    .gi .go{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;gap:4px;opacity:0;transition:opacity .15s}
-    .gi:hover .go{opacity:1}
-    .go button{width:26px;height:26px;border-radius:50%;border:none;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-    .ov-v{background:var(--ac);color:#0c141c}
-    .ov-d{background:var(--rd);color:#fff}
-    .vi-badge{position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,.7);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600;pointer-events:none}
-    .fi-size{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.7);color:var(--dm);font-size:8px;padding:1px 4px;border-radius:3px;pointer-events:none}
-    .cap-badge{position:absolute;top:3px;left:3px;background:rgba(79,195,247,.86);color:#0c141c;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700;pointer-events:none}
-
-    /* Upload */
-    .ur{margin-top:8px;padding-left:46px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-    .ul{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;border:1px dashed var(--bd);background:transparent;color:var(--dm);font-family:'Sarabun',sans-serif;font-size:11px;cursor:pointer;transition:all .15s}
-    .ul:hover{border-color:var(--ac);color:var(--ac)}
-    .cap-row{margin-top:8px;padding-left:46px}
-    .cap-input{width:100%;min-height:54px;resize:vertical;border:1px solid var(--bd);border-radius:8px;background:rgba(255,255,255,.03);color:var(--tx);font-family:'Sarabun',sans-serif;font-size:12px;line-height:1.6;padding:8px 10px;outline:none}
-    .cap-input:focus{border-color:var(--ac);box-shadow:0 0 0 2px rgba(79,195,247,.08)}
-    .cap-input::placeholder{color:var(--dm)}
-    .file-cap{width:100%;font-size:10px;line-height:1.5;color:var(--ac2);background:rgba(79,195,247,.08);border:1px solid rgba(79,195,247,.16);border-radius:6px;padding:4px 6px;margin-top:4px;max-width:80px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-
-    /* Progress bar */
-    .pg-wrap{width:100%;margin-top:6px;padding-left:46px}
-    .pg-bar{width:100%;height:6px;background:var(--bd);border-radius:3px;overflow:hidden}
-    .pg-fill{height:100%;background:var(--ac);border-radius:3px;transition:width .2s}
-    .pg-text{font-size:10px;color:var(--dm);margin-top:2px}
-
-    /* White School script block */
-    .ws-script{margin-top:8px;padding-left:46px}
-    .ws-script-inner{background:rgba(79,195,247,.04);border-left:3px solid rgba(79,195,247,.25);border-radius:0 6px 6px 0;padding:8px 12px}
-    .ws-script-text{font-size:12px;color:var(--dm);line-height:1.8}
-
-    /* Modal */
-    .mb{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
-    .mx{position:relative;max-width:94vw;max-height:90vh;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--bd);display:flex;flex-direction:column}
-    .mx img{display:block;width:auto;max-width:94vw;max-height:74vh;object-fit:contain;align-self:center}
-    .mx video{display:block;max-width:94vw;max-height:74vh;background:#000}
-    .mf{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--bd)}
-    .mn{font-size:11px;color:var(--dm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
-    .mdesc{font-size:12px;color:var(--tx);line-height:1.7;background:rgba(79,195,247,.06);border-left:3px solid rgba(79,195,247,.35);padding:8px 10px;margin:0 14px 10px;border-radius:0 6px 6px 0;white-space:pre-wrap}
-    .ms{font-size:10px;color:var(--dm);margin-left:8px;white-space:nowrap}
-    .mc{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-    .btn-sm{padding:4px 10px;font-size:11px;border-radius:5px}
-    .btn-rs{padding:4px 10px;font-size:11px;border-radius:5px;background:transparent;color:var(--rd);border:1px solid rgba(239,83,80,.3);cursor:pointer}
-
-    .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(70px);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:999;transition:transform .25s ease;pointer-events:none;white-space:nowrap}
-    .toast.show{transform:translateX(-50%) translateY(0)}
-    .toast-success{background:var(--gn);color:#0c141c}
-    .toast-error{background:var(--rd);color:#fff}
-
-    .ov{position:fixed;inset:0;background:rgba(12,20,28,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200}
-    .sp{width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .5s linear infinite}
-    .ov .sp{width:30px;height:30px;border-width:3px}
-    .ov p{margin-top:10px;font-size:13px;color:var(--dm)}
-    @keyframes spin{to{transform:rotate(360deg)}}
-
-    .hidden{display:none!important}
-
-    /* ===================== MOBILE IMPROVEMENTS ===================== */
-    @media (max-width: 600px) {
-      /* Safe area for notch / home bar */
-      body { padding-bottom: env(safe-area-inset-bottom, 0px); }
-      .hd { padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
-      .toast { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
-
-      /* Header — tighter on small screens */
-      .hd h1 { font-size: 15px; }
-      .hd p  { font-size: 10px; }
-
-      /* Stat bar — smaller gap so it fits one line */
-      .st { gap: 8px; font-size: 11px; padding: 8px 12px; }
-
-      /* Action buttons — full-width and taller for thumbs */
-      .act { flex-direction: column; gap: 6px; padding: 10px 12px; }
-      .btn { width: 100%; justify-content: center; padding: 12px 16px; font-size: 14px; }
-
-      /* Section header */
-      .oh { padding: 12px; }
-      .ot { font-size: 14px; }
-
-      /* Topic row */
-      .tc { padding: 12px 12px; }
-      .tn { min-width: 32px; height: 32px; font-size: 11px; }
-      .tt { font-size: 12px; }
-
-      /* Gallery — bigger thumbnails, no left-indent on mobile */
-      .gl { padding-left: 0; gap: 8px; margin-top: 10px; }
-      .gi { width: 96px; height: 96px; border-radius: 10px; }
-
-      /* Touch phones — small delete badge in corner; image stays visible */
-      .gi .go { opacity: 1; background: none; align-items: flex-start; justify-content: flex-end; padding: 4px; }
-      .ov-v { display: none; }
-      .ov-d { width: 26px; height: 26px; font-size: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.6); }
-
-      /* Upload buttons — bigger tap area */
-      .ur { padding-left: 0; gap: 8px; margin-top: 10px; }
-      .ul { padding: 10px 16px; font-size: 13px; border-radius: 8px; flex: 1; justify-content: center; min-width: 120px; }
-      .cap-row { padding-left: 0; }
-      .cap-input { font-size: 13px; min-height: 64px; }
-      .file-cap { max-width: 96px; font-size: 10px; }
-
-      /* Progress */
-      .pg-wrap { padding-left: 0; }
-
-      /* White School script */
-      .ws-script { padding-left: 0; margin-top: 8px; }
-      .ws-script-text { font-size: 11px; line-height: 1.7; }
-
-      /* Image hints */
-      .hints { padding-left: 0; }
-      .hint { font-size: 10px; }
-
-      /* Modal — full screen on phone */
-      .mb { padding: 0; align-items: flex-end; }
-      .mx {
-        max-width: 100vw;
-        width: 100vw;
-        max-height: 92vh;
-        border-radius: 16px 16px 0 0;
-        border-bottom: none;
-      }
-      .mx img  { max-width: 100vw; max-height: 60vh; }
-      .mx video{ max-width: 100vw; max-height: 60vh; }
-
-      /* Modal footer — stack buttons vertically */
-      .mf { flex-wrap: wrap; gap: 8px; padding: 12px; }
-      .mn { font-size: 12px; width: 100%; }
-      .ms { display: none; } /* hide size on small screens to save space */
-      .btn-sm, .btn-rs { flex: 1; padding: 10px 8px; font-size: 13px; text-align: center; justify-content: center; }
-      .mc { top: 10px; right: 10px; width: 36px; height: 36px; font-size: 18px; }
-
-      /* Toast — full width */
-      .toast { width: calc(100% - 32px); text-align: center; white-space: normal; font-size: 12px; }
-    }
-
-    /* ===================== TABLET / iPAD ===================== */
-    /* On iPad, the whole thumbnail (.gi) is already tappable to open preview.
-       So we hide the redundant 👁 view button and show only a small delete
-       badge in the top-right corner — the image stays fully visible. */
-    @media (min-width: 601px) and (hover: none) and (pointer: coarse) {
-      .gi { width: 90px; height: 90px; }
-      .gi .go {
-        opacity: 1;
-        background: none;          /* no dark overlay — image fully visible */
-        align-items: flex-start;
-        justify-content: flex-end;
-        padding: 4px;
-      }
-      .ov-v { display: none; }     /* hide view btn — tap anywhere on image opens preview */
-      .ov-d { width: 24px; height: 24px; font-size: 11px;
-              box-shadow: 0 1px 4px rgba(0,0,0,.6); }
-    }
+    :root{--navy:#172033;--blue:#1b61c9;--blue2:#eaf2ff;--bg:#f4f7fb;--card:#fff;--line:#dfe5ee;--muted:#687386;--green:#15803d;--green2:#eaf8ef;--amber:#b45309;--amber2:#fff7e6;--red:#c2413b;--red2:#fff0ef;--shadow:0 8px 30px rgba(23,32,51,.08);--radius:18px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--navy);font-family:'Sarabun',system-ui,sans-serif;line-height:1.55}
+    button,input,textarea{font:inherit}.hidden{display:none!important}
+    .hero{background:linear-gradient(135deg,#163d7a 0%,#1b61c9 60%,#3d7fe0 100%);color:white;padding:calc(24px + env(safe-area-inset-top)) 18px 28px;position:relative;overflow:hidden}
+    .hero:after{content:'';position:absolute;width:280px;height:280px;border:60px solid rgba(255,255,255,.08);border-radius:50%;right:-120px;top:-130px}.hero-inner{max-width:1100px;margin:auto;position:relative;z-index:1}.eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.8}.hero h1{font-size:clamp(26px,5vw,42px);line-height:1.2;margin:8px 0}.hero p{max-width:760px;margin:0;opacity:.9;font-size:15px}.hero-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.hero-meta span{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:5px 10px;font-size:12px}
+    .wrap{max-width:1100px;margin:-16px auto 60px;padding:0 16px;position:relative;z-index:2}.dashboard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{background:#f8fafc;border:1px solid #edf0f5;border-radius:14px;padding:12px}.stat-label{font-size:11px;color:var(--muted)}.stat-value{font-size:23px;font-weight:700;line-height:1.25;margin-top:2px}.stat-value.blue{color:var(--blue)}.stat-value.green{color:var(--green)}
+    .progress{height:10px;background:#e9edf3;border-radius:99px;overflow:hidden;margin-top:14px}.progress>div{height:100%;width:0;background:linear-gradient(90deg,#1b61c9,#39a0ed);transition:width .35s}.progress-text{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:6px}.notice{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--amber2);color:#7c4707;font-size:12px;border:1px solid #f5dfb8}
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:18px 0}.filters{display:flex;gap:7px;flex:1;overflow:auto;padding-bottom:2px}.chip{border:1px solid var(--line);background:white;color:var(--muted);border-radius:999px;padding:8px 13px;white-space:nowrap;cursor:pointer;font-size:12px;font-weight:600}.chip.active{background:var(--navy);color:white;border-color:var(--navy)}.actions{display:flex;gap:7px}.btn{border:0;border-radius:12px;padding:9px 13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn-primary{background:var(--blue);color:#fff}.btn-secondary{background:white;color:var(--navy);border:1px solid var(--line)}.btn-danger{background:var(--red2);color:var(--red)}.btn:disabled{opacity:.45;cursor:not-allowed}
+    .slide{background:white;border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;box-shadow:0 3px 18px rgba(23,32,51,.04)}.slide-head{display:flex;gap:12px;align-items:center;padding:16px;cursor:pointer;background:linear-gradient(90deg,#fff,#fbfdff)}.slide-no{width:48px;height:48px;flex:0 0 48px;border-radius:14px;background:var(--blue2);color:var(--blue);display:grid;place-items:center;font-size:14px;font-weight:700}.slide-title{flex:1;min-width:0}.slide-title h2{font-size:17px;margin:0}.slide-title p{font-size:12px;color:var(--muted);margin:2px 0 0}.slide-progress{text-align:right}.slide-progress strong{font-size:15px;color:var(--blue)}.slide-progress small{display:block;color:var(--muted);font-size:10px}.chev{color:var(--muted);transition:transform .2s}.slide.collapsed .chev{transform:rotate(-90deg)}.slide.collapsed .items{display:none}
+    .item{padding:15px 16px;border-top:1px solid var(--line)}.item.complete{background:linear-gradient(90deg,rgba(234,248,239,.55),transparent 55%)}.item-top{display:flex;gap:11px;align-items:flex-start}.status{width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:#edf1f6;color:#8791a1;display:grid;place-items:center;font-weight:700}.complete .status{background:var(--green2);color:var(--green)}.item-body{flex:1;min-width:0}.item-title-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.item h3{font-size:14px;margin:0}.badge{font-size:10px;line-height:1;border-radius:999px;padding:5px 8px;font-weight:700}.priority-A{background:var(--red2);color:var(--red)}.priority-B{background:var(--blue2);color:var(--blue)}.priority-C{background:var(--amber2);color:var(--amber)}.optional{background:#eef0f3;color:#657083}.code{font-family:ui-monospace,monospace;color:#748196;font-size:11px;margin-top:2px}.hint{font-size:13px;color:#586579;margin-top:6px}.evidence-note{width:100%;margin-top:10px;border:1px solid var(--line);background:#fbfcfe;border-radius:10px;padding:9px 10px;min-height:44px;resize:vertical;font-size:13px;color:var(--navy);outline:none}.evidence-note:focus{border-color:#77a7e6;box-shadow:0 0 0 3px rgba(27,97,201,.08)}
+    .gallery{display:flex;gap:8px;overflow-x:auto;margin-top:11px;padding-bottom:3px}.photo{position:relative;flex:0 0 98px;height:98px;border-radius:12px;overflow:hidden;background:#e9edf3;border:1px solid var(--line);cursor:pointer}.photo img{width:100%;height:100%;object-fit:cover;display:block}.photo .delete{position:absolute;right:5px;top:5px;width:27px;height:27px;border:0;border-radius:9px;background:rgba(20,27,39,.78);color:white;cursor:pointer}.photo .caption-dot{position:absolute;left:6px;bottom:6px;background:var(--blue);color:white;border-radius:999px;font-size:9px;padding:2px 6px}.upload-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.upload{cursor:pointer;border:1px dashed #aab7c8;background:#f8fafc;color:#425169;border-radius:11px;padding:8px 12px;font-size:12px;font-weight:600}.upload-camera{border-style:solid;border-color:#cbdcf5;background:var(--blue2);color:var(--blue)}.upload:hover{border-color:var(--blue);color:var(--blue)}.upload input{display:none}.upload-progress{font-size:11px;color:var(--blue);margin-top:8px}.mini-progress{height:5px;border-radius:99px;background:#e5eaf1;margin-top:4px;overflow:hidden}.mini-progress>div{height:100%;background:var(--blue)}
+    .empty-filter{text-align:center;background:white;border:1px solid var(--line);border-radius:var(--radius);padding:38px;color:var(--muted)}
+    .modal{position:fixed;inset:0;background:rgba(12,18,28,.88);z-index:50;display:grid;place-items:center;padding:16px}.modal-card{width:min(900px,96vw);max-height:92vh;background:white;border-radius:18px;overflow:hidden;position:relative}.modal img{display:block;width:100%;height:auto;max-height:72vh;object-fit:contain;background:#10151e}.modal-close{position:absolute;right:10px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:white;font-size:18px;cursor:pointer}.modal-info{padding:13px 15px}.modal-name{font-size:12px;color:var(--muted);word-break:break-all}.modal-desc{font-size:13px;margin-top:5px;white-space:pre-wrap}.modal-links{display:flex;gap:8px;margin-top:10px}
+    .overlay{position:fixed;inset:0;background:rgba(244,247,251,.92);z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:center}.spinner{width:34px;height:34px;border:3px solid #dbe3ee;border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.overlay p{font-size:13px;color:var(--muted)}.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,80px);opacity:0;z-index:100;padding:10px 16px;border-radius:12px;background:var(--navy);color:white;font-size:13px;box-shadow:var(--shadow);transition:.25s;max-width:calc(100vw - 30px);text-align:center}.toast.show{transform:translate(-50%,0);opacity:1}.toast.error{background:var(--red)}
+    @media(max-width:700px){.wrap{padding:0 10px}.stats{grid-template-columns:repeat(2,1fr)}.toolbar{align-items:stretch}.filters{width:100%;flex-basis:100%}.actions{width:100%}.actions .btn{flex:1}.slide-head{padding:13px}.slide-no{width:42px;height:42px;flex-basis:42px}.slide-title h2{font-size:15px}.slide-title p{display:none}.item{padding:14px 13px}.item-top{gap:9px}.evidence-note{font-size:16px}.photo{flex-basis:104px;height:104px}.upload{flex:1;text-align:center;padding:10px}.modal{padding:0;align-items:end}.modal-card{width:100vw;max-height:94vh;border-radius:18px 18px 0 0}.modal img{max-height:66vh}}
   </style>
 </head>
 <body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">PA 2569 · Image Evidence Collector</div>
+      <h1>คลังภาพหลักฐาน PA 2569</h1>
+      <p>เครื่องมือช่วยเก็บภาพตามโครงเรื่อง Presentation เพื่อพิสูจน์ว่า “สิ่งที่ครูทำ ส่งผลให้นักเรียนเปลี่ยนแปลงอย่างไร”</p>
+      <div class="hero-meta"><span>นายพิมล ตุ่นกระโทก</span><span>ครูชำนาญการ</span><span>โรงเรียนบ้านโพนแท่น</span><span>ป.1 กลุ่มเป้าหมาย 3 คน</span></div>
+    </div>
+  </header>
 
-<div class="hd">
-  <h1>📁 อัปโหลดหลักฐานประเมินครูผู้ช่วย</h1>
-  <p>อัปโหลดรูปภาพและวิดีโอตามด้านและหัวข้อย่อยจากแฟ้มประเมินครูผู้ช่วย</p>
-</div>
+  <main class="wrap">
+    <section class="dashboard">
+      <div class="stats">
+        <div class="stat"><div class="stat-label">หัวข้อจำเป็น</div><div class="stat-value blue" id="statRequired">0</div></div>
+        <div class="stat"><div class="stat-label">เก็บครบแล้ว</div><div class="stat-value green" id="statDone">0</div></div>
+        <div class="stat"><div class="stat-label">ยังขาด</div><div class="stat-value" id="statMissing">0</div></div>
+        <div class="stat"><div class="stat-label">รูปทั้งหมด</div><div class="stat-value" id="statFiles">0</div></div>
+      </div>
+      <div class="progress"><div id="mainProgress"></div></div>
+      <div class="progress-text"><span>ความพร้อมของหลักฐานที่จำเป็น</span><strong id="mainPercent">0%</strong></div>
+      <div class="notice">🔒 ก่อนอัปโหลด Screenshot หรือเอกสาร กรุณาปิดชื่อ เลขประจำตัว เบอร์โทร และข้อมูลส่วนบุคคลของนักเรียน/ผู้ปกครอง</div>
+    </section>
 
-<!-- Supervision Panel -->
-<div id="wsPanel">
-  <div class="st">
-    <div>หัวข้อย่อยทั้งหมด: <span id="wsST">0</span></div>
-    <div>มีไฟล์แล้ว: <span id="wsSD">0</span></div>
-    <div>ไฟล์ทั้งหมด: <span id="wsSF">0</span></div>
-    <div>ยังไม่มี: <span id="wsSR">0</span></div>
-  </div>
-  <div class="act">
-    <button class="btn btn-p" id="wsBtnZ" disabled onclick="doWsZip()">📦 ดาวน์โหลด ZIP</button>
-    <button class="btn btn-g" onclick="doWsRefresh()">🔄 รีเฟรช</button>
-  </div>
-  <div id="wsList"></div>
-</div>
+    <div class="toolbar">
+      <div class="filters" id="filters">
+        <button class="chip active" data-filter="all">ทั้งหมด</button>
+        <button class="chip" data-filter="missing">ยังขาด</button>
+        <button class="chip" data-filter="done">เก็บแล้ว</button>
+        <button class="chip" data-filter="A">เร่งด่วน A</button>
+        <button class="chip" data-filter="optional">ภาพเสริม</button>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="collapseAll()">ยุบ/ขยาย</button>
+        <button class="btn btn-secondary" id="driveBtn" onclick="openDrive()" disabled>📁 Drive</button>
+        <button class="btn btn-secondary" onclick="refreshData()">↻ รีเฟรช</button>
+        <button class="btn btn-primary" id="zipBtn" onclick="downloadZip()" disabled>ดาวน์โหลด ZIP</button>
+      </div>
+    </div>
 
-<!-- Shared Modal -->
-<div class="mb hidden" id="modal" onclick="closeM(event)">
-  <div class="mx">
-    <button class="mc" onclick="closeM()">✕</button>
-    <img id="mImg" class="hidden" />
-    <video id="mVid" class="hidden" controls></video>
-    <div class="mdesc hidden" id="mDesc"></div>
-    <div class="mf">
-      <div class="mn" id="mNm"></div>
-      <div class="ms" id="mSz"></div>
-      <div style="display:flex;gap:6px">
-        <label class="btn btn-sm btn-g" style="cursor:pointer">🔄 เปลี่ยน<input type="file" accept="image/*,video/*,video/mp4,video/quicktime,video/3gpp,video/x-matroska" style="display:none" id="repIn" /></label>
-        <button class="btn-rs" id="mDl">🗑 ลบ</button>
+    <div id="slides"></div>
+  </main>
+
+  <div class="modal hidden" id="modal" onclick="closeModal(event)">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <img id="modalImage" alt="ภาพหลักฐาน">
+      <div class="modal-info">
+        <div class="modal-name" id="modalName"></div>
+        <div class="modal-desc" id="modalDesc"></div>
+        <div class="modal-links"><a class="btn btn-primary" id="modalDrive" target="_blank" rel="noopener">เปิดต้นฉบับใน Drive</a><button class="btn btn-danger" id="modalDelete">ลบภาพ</button></div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
-<div class="ov hidden" id="ov"><div class="sp"></div><p id="ovT">กำลังดำเนินการ...</p></div>
+  <div class="overlay" id="overlay"><div class="spinner"></div><p id="overlayText">กำลังโหลดรายการภาพ...</p></div>
+  <div class="toast" id="toast"></div>
 
 <script>
-// ===================== SUPERVISION CHECKLIST DATA =====================
-var WS_TOPICS=[
-  {id:"t1-1",num:"1.1",title:"วินัยและการรักษาวินัย",desc:"การประพฤติตนตามระเบียบวินัยราชการ การแต่งกายสุภาพ ตรงต่อเวลา ซื่อสัตย์ อุทิศเวลา และเป็นแบบอย่างที่ดี"},
-  {id:"t1-2",num:"1.2",title:"คุณธรรม จริยธรรม",desc:"การยึดหลักคุณธรรม จริยธรรม และหลักธรรมในการปฏิบัติงาน พร้อมสอดแทรกคุณธรรมแก่ผู้เรียน"},
-  {id:"t1-3",num:"1.3",title:"จรรยาบรรณวิชาชีพ",desc:"การปฏิบัติตนตามมาตรฐานและจรรยาบรรณวิชาชีพครู ต่อตนเอง ผู้เรียน เพื่อนร่วมวิชาชีพ และสังคม"},
-  {id:"t1-4",num:"1.4",title:"การดำรงชีวิตตามหลักปรัชญาเศรษฐกิจพอเพียง",desc:"การนำหลักความพอประมาณ ความมีเหตุผล ภูมิคุ้มกัน ความรู้ และคุณธรรมมาใช้ในการดำเนินชีวิตและการทำงาน"},
-  {id:"t1-5",num:"1.5",title:"จิตวิญญาณความเป็นครู",desc:"ความรัก ศรัทธา และความมุ่งมั่นในวิชาชีพ การเตรียมการสอน ดูแลช่วยเหลือผู้เรียน และปฏิบัติงานเต็มความสามารถ"},
-  {id:"t1-6",num:"1.6",title:"จิตสำนึกความรับผิดชอบในวิชาชีพครู",desc:"ความรับผิดชอบต่อหน้าที่ เจตคติเชิงบวก การสร้างสื่อหรือนวัตกรรม และการรักษาภาพลักษณ์ของครู"},
-  {id:"t2-1",num:"2.1",title:"การจัดการเรียนการสอน",desc:"การวิเคราะห์มาตรฐาน ตัวชี้วัด ออกแบบแผนการจัดการเรียนรู้ พัฒนาสื่อ วัดประเมินผล และวิจัยเพื่อพัฒนาผู้เรียน"},
-  {id:"t2-2",num:"2.2",title:"การบริหารจัดการชั้นเรียน",desc:"การจัดบรรยากาศในชั้นเรียน ปลูกฝังคุณธรรม วินัย ประชาธิปไตย ดูแลสุขภาพกายใจ และช่วยเหลือผู้เรียนรายบุคคล"},
-  {id:"t2-3",num:"2.3",title:"การพัฒนาตนเอง",desc:"การวางแผนพัฒนาตนเอง อบรม ศึกษาหาความรู้ ใช้เทคโนโลยี และมีส่วนร่วมในชุมชนการเรียนรู้ทางวิชาชีพ PLC"},
-  {id:"t2-4",num:"2.4",title:"การทำงานเป็นทีม",desc:"การทำงานร่วมกับผู้อื่น ประสานงาน ปรับตัว เป็นผู้นำและผู้ตาม แลกเปลี่ยนความคิดเห็น และร่วมมือเพื่อเป้าหมายสถานศึกษา"},
-  {id:"t2-5",num:"2.5",title:"งานกิจกรรมตามภารกิจบริหารงานของสถานศึกษา",desc:"ภาระงานที่ได้รับมอบหมาย เช่น งานครูประจำชั้น งานสอน งานอนามัย งานสื่อเทคโนโลยี ห้องคอมพิวเตอร์ และกิจกรรมโรงเรียน"},
-  {id:"t2-6",num:"2.6",title:"การใช้ภาษาและเทคโนโลยี",desc:"การใช้ภาษา เทคโนโลยี เว็บไซต์ แอปพลิเคชัน และสื่อดิจิทัลเพื่อสนับสนุนการสอนและการปฏิบัติงาน"}
-];
+var app={slides:[],files:[],folderUrl:'',filter:'all',uploading:{},collapsed:{S02:true,S03:true,S04:true,S05:true,S06:true,S07:true,S08:true,S09:true,S10:true}};
+var CHUNK_SIZE=5*1024*1024;
+var LARGE_THRESHOLD=18*1024*1024;
 
-// ===================== STATE =====================
-var wsMap={};
-var curP=null;
-var wsUploadProgress={};
-
-window.onload=function(){renderWs();doWsRefresh();};
-
-// ===================== SUPERVISION CHECKLIST RENDER =====================
-var SECTION_HEADERS = {
-  't1': {label:'ด้านที่ 1', title:'การปฏิบัติตน'},
-  't2': {label:'ด้านที่ 2', title:'การปฏิบัติงาน'}
-};
-var SUB_HEADERS = {};
-
-function renderWs(){
-  var h='';
-  h+='<div class="oh"><div class="ol">แฟ้มประเมินครูผู้ช่วย</div><div class="ot">อัปโหลดหลักฐานตามหัวข้อและหัวข้อย่อยจากไฟล์โครงสร้าง</div></div>';
-  var dn=0,tf=0;
-  var lastSection='';
-  WS_TOPICS.forEach(function(it){
-    var fs=wsMap[it.id]||[];
-    var has=fs.length>0;
-    var prog=wsUploadProgress[it.id];
-    if(has)dn++;
-    tf+=fs.length;
-    // Section header
-    var sec=it.id.match(/^(t\d)/);
-    var secKey=sec?sec[1]:'';
-    if(secKey && secKey!==lastSection){
-      lastSection=secKey;
-      var sh=SECTION_HEADERS[secKey];
-      if(sh) h+='<div class="dh">'+sh.label+' – '+sh.title+'</div>';
-    }
-    // Sub-section header
-    if(SUB_HEADERS[it.id]) h+='<div class="dh" style="padding-left:32px;font-size:12px;opacity:.8">'+SUB_HEADERS[it.id]+'</div>';
-    h+='<div class="tc"><div class="th"><div class="tn">'+it.num+'</div><div class="tb"><div class="tt"><b>'+it.title+'</b></div>'+(it.desc?'<div class="ws-script-text" style="margin-top:3px">'+it.desc+'</div>':'')+'<div class="tm">';
-    if(has){
-      var vc=0,ic=0;
-      fs.forEach(function(f){f.isVideo?vc++:ic++});
-      var parts=[];
-      if(ic)parts.push(ic+' รูป');
-      if(vc)parts.push(vc+' วิดีโอ');
-      h+='<span class="bd bd-ok">✓ '+parts.join(' · ')+'</span>';
-    }else{
-      h+='<span class="bd bd-no">ยังไม่มีไฟล์</span>';
-    }
-    h+='</div></div></div>';
-    // Gallery
-    if(has){
-      h+='<div class="gl">';
-      fs.forEach(function(f,i){
-        h+='<div class="gi" onclick="openM(\'ws\',\''+it.id+'\','+i+')">';
-        if(f.isVideo){h+='<img src="'+f.thumbnail+'" onerror="this.style.background=\'#1a2836\'" />';h+='<div class="vi-badge">▶ VDO</div>';}
-        else{h+='<img src="'+f.thumbnail+'" loading="lazy" />';}
-        if(f.description)h+='<div class="cap-badge" title="'+esc(f.description)+'">คำอธิบาย</div>';
-        if(f.sizeText)h+='<div class="fi-size">'+f.sizeText+'</div>';
-        h+='<div class="go"><button class="ov-v" onclick="event.stopPropagation();openM(\'ws\',\''+it.id+'\','+i+')">👁</button>';
-        h+='<button class="ov-d" onclick="event.stopPropagation();doDelWs(\''+it.id+'\','+i+')">✕</button></div></div>';
-      });
-      h+='</div>';
-    }
-    // Progress
-    if(prog){
-      var pgLabel=prog.chunkMode
-        ? 'กำลังอัปโหลดวิดีโอขนาดใหญ่... ('+prog.percent+'%)'
-        : 'กำลังอัปโหลด '+prog.current+'/'+prog.total+' ('+prog.percent+'%)';
-      h+='<div class="pg-wrap"><div class="pg-bar"><div class="pg-fill" style="width:'+prog.percent+'%"></div></div>';
-      h+='<div class="pg-text">'+pgLabel+'</div></div>';
-    }
-    // Optional caption + upload buttons
-    h+='<div class="cap-row"><textarea class="cap-input" id="cap_'+it.id+'" maxlength="1000" placeholder="คำอธิบายภาพ/ไฟล์ประกอบ (ไม่บังคับ) เช่น กิจกรรมอะไร วันที่ไหน ผู้เกี่ยวข้อง หรือผลลัพธ์ที่เกิดขึ้น"></textarea></div>';
-    h+='<div class="ur">';
-    h+='<label class="ul">📷 '+(has?'เพิ่มรูป':'เลือกรูป')+'<input type="file" accept="image/*" multiple style="display:none" onchange="doWsUp(this,\''+it.id+'\')" /></label>';
-    h+='<label class="ul">🎬 '+(has?'เพิ่มวิดีโอ':'เลือกวิดีโอ')+'<input type="file" accept="video/*,video/mp4,video/quicktime,video/3gpp,video/x-matroska" multiple style="display:none" onchange="doWsUp(this,\''+it.id+'\')" /></label>';
-    h+='</div></div>';
+window.addEventListener('load',function(){
+  document.getElementById('filters').addEventListener('click',function(e){
+    var btn=e.target.closest('[data-filter]'); if(!btn)return;
+    app.filter=btn.dataset.filter;
+    document.querySelectorAll('.chip').forEach(function(x){x.classList.toggle('active',x===btn)});
+    render();
   });
-  document.getElementById('wsList').innerHTML=h;
-  document.getElementById('wsST').textContent=WS_TOPICS.length;
-  document.getElementById('wsSD').textContent=dn;
-  document.getElementById('wsSF').textContent=tf;
-  document.getElementById('wsSR').textContent=WS_TOPICS.length-dn;
-  document.getElementById('wsBtnZ').disabled=tf===0;
+  refreshData();
+});
+
+function refreshData(){
+  showOverlay('กำลังโหลดรายการภาพจาก Google Drive...');
+  google.script.run.withSuccessHandler(function(result){
+    hideOverlay();
+    if(!result||!result.success){showToast((result&&result.error)||'โหลดข้อมูลไม่สำเร็จ',true);return;}
+    app.slides=result.slides||[]; app.files=result.files||[]; app.folderUrl=result.folderUrl||'';
+    render();
+  }).withFailureHandler(function(err){hideOverlay();showToast(errorText(err),true)}).getPaData();
 }
 
-// ===================== SHARED UPLOAD HELPERS =====================
-var CHUNK_BYTES = 25 * 1024 * 1024; // 25 MB per chunk — base64 inflates to ~33 MB, safe under Apps Script's ~50 MB RPC limit
-var LARGE_FILE_THRESHOLD = 20 * 1024 * 1024; // files > 20 MB use chunked path
-var CHUNK_CONCURRENCY = 6; // google.script.run allows up to 10 concurrent; 6 leaves headroom
+function filesFor(itemId){return app.files.filter(function(f){return f.itemId===itemId})}
+function itemVisible(item){var has=filesFor(item.id).length>0;if(app.filter==='missing')return !has&&item.required;if(app.filter==='done')return has;if(app.filter==='A')return item.priority==='A';if(app.filter==='optional')return !item.required;return true}
 
-// Extension → safe MIME type map for phone-captured videos.
-// Fixes: (1) file.type="" on Android Chrome 14/15, (2) video/quicktime MOV files,
-// (3) .hevc/.heic files that browsers mis-report.
-var EXT_MIME = {
-  'mp4':  'video/mp4',
-  'm4v':  'video/mp4',
-  'mov':  'video/mp4',   // QuickTime container — normalize to mp4 for Drive compatibility
-  'qt':   'video/mp4',
-  'hevc': 'video/mp4',
-  '3gp':  'video/3gpp',
-  '3g2':  'video/3gpp2',
-  'webm': 'video/webm',
-  'mkv':  'video/x-matroska',
-  'avi':  'video/x-msvideo',
-  'wmv':  'video/x-ms-wmv',
-  'flv':  'video/x-flv',
-  // images
-  'jpg':  'image/jpeg',
-  'jpeg': 'image/jpeg',
-  'png':  'image/png',
-  'gif':  'image/gif',
-  'webp': 'image/webp',
-  'heic': 'image/heic',
-  'heif': 'image/heif',
-  'bmp':  'image/bmp',
-  'tif':  'image/tiff',
-  'tiff': 'image/tiff',
-};
+function render(){
+  var required=0,done=0,totalFiles=app.files.length;
+  app.slides.forEach(function(s){s.items.forEach(function(i){if(i.required){required++;if(filesFor(i.id).length)done++;}})});
+  document.getElementById('statRequired').textContent=required;
+  document.getElementById('statDone').textContent=done;
+  document.getElementById('statMissing').textContent=required-done;
+  document.getElementById('statFiles').textContent=totalFiles;
+  var percent=required?Math.round(done/required*100):0;
+  document.getElementById('mainProgress').style.width=percent+'%';
+  document.getElementById('mainPercent').textContent=percent+'%';
+  document.getElementById('zipBtn').disabled=!totalFiles;
+  document.getElementById('driveBtn').disabled=!app.folderUrl;
 
-// Resolve the true MIME type from file.type + filename extension.
-// Handles empty file.type (Android bug), video/quicktime (MOV), etc.
-function resolveMime(file) {
-  var ext = file.name.split('.').pop().toLowerCase();
-  // 1. If browser gave us a usable type that isn't a known problem, use it
-  var t = file.type || '';
-  // video/quicktime = MOV — normalize to mp4 so Drive processes it correctly
-  if (t === 'video/quicktime' || t === 'video/mov') t = 'video/mp4';
-  // If type is empty or generic, look up by extension
-  if (!t || t === 'application/octet-stream') {
-    t = EXT_MIME[ext] || 'application/octet-stream';
-  }
-  return t;
-}
-
-// อัปโหลดไฟล์เดียว — เลือกเส้นทางตามขนาด
-function uploadOneFile(file, extraFields, onDone, onFail, onProgress) {
-  var mime = resolveMime(file);
-  if (file.size > LARGE_FILE_THRESHOLD) {
-    uploadOneFileChunked(file, mime, extraFields, onDone, onFail, onProgress);
-  } else {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      // Replace whatever MIME the browser put in the data URL with the resolved one
-      var dataUrl = e.target.result.replace(/^data:[^;]+/, 'data:' + mime);
-      var fd = Object.assign({fileName:file.name, mimeType:mime, dataUrl:dataUrl}, extraFields);
-      var fn = extraFields.sectionId ? 'uploadWsFile' : 'uploadFile';
-      google.script.run
-        .withSuccessHandler(function(r){ if(r&&r.success) onDone(r); else onFail(r&&r.error); })
-        .withFailureHandler(function(e){ onFail(e); })
-        [fn](fd);
-    };
-    reader.onerror = function(){ onFail('FileReader error'); };
-    reader.readAsDataURL(file);
-  }
-}
-
-// อัปโหลดแบบ chunked สำหรับไฟล์ใหญ่ — parallel worker pool (ใช้ DriveApp ล้วน)
-// ส่ง CHUNK_CONCURRENCY chunks พร้อมกัน เพื่อลด idle time ระหว่างรอ server response
-function uploadOneFileChunked(file, mime, extraFields, onDone, onFail, onProgress) {
-  var totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_BYTES));
-  var startData = Object.assign({fileName:file.name, mimeType:mime, totalChunks:totalChunks}, extraFields);
-
-  google.script.run
-    .withSuccessHandler(function(init) {
-      if (!init || !init.success) { onFail(init&&init.error); return; }
-
-      var sessionId = init.sessionId;
-      var nextIndex = 0;
-      var inFlight = 0;
-      var completedBytes = 0;
-      var failed = false;
-      var done = false;
-
-      function chunkOffsets(idx) {
-        var off = idx * CHUNK_BYTES;
-        var end = Math.min(off + CHUNK_BYTES, file.size);
-        return { off: off, end: end };
-      }
-
-      function launch() {
-        if (failed || done) return;
-        while (inFlight < CHUNK_CONCURRENCY && nextIndex < totalChunks) {
-          var idx = nextIndex++;
-          inFlight++;
-          sendOneChunk(idx);
-        }
-      }
-
-      function sendOneChunk(idx) {
-        var r = chunkOffsets(idx);
-        var slice = file.slice(r.off, r.end);
-        var thisSize = r.end - r.off;
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          if (failed) { inFlight--; return; }
-          var raw = e.target.result;
-          var b64 = raw.indexOf(',') !== -1 ? raw.split(',')[1] : raw;
-          var data = {
-            sessionId: sessionId,
-            chunk: b64,
-            chunkIndex: idx,
-            mimeType: mime
-          };
-          google.script.run
-            .withSuccessHandler(function(resp) {
-              inFlight--;
-              if (failed || done) return;
-              if (!resp || !resp.success) {
-                failed = true;
-                onFail(resp && resp.error);
-                return;
-              }
-              completedBytes += thisSize;
-              if (onProgress) onProgress(completedBytes, file.size);
-              if (resp.complete) {
-                done = true;
-                onDone(resp);
-                return;
-              }
-              launch();
-            })
-            .withFailureHandler(function(err){
-              inFlight--;
-              if (failed || done) return;
-              failed = true;
-              onFail(err);
-            })
-            .uploadChunk(data);
-        };
-        reader.onerror = function() {
-          inFlight--;
-          if (failed || done) return;
-          failed = true;
-          onFail('FileReader chunk error at index ' + idx);
-        };
-        reader.readAsDataURL(slice);
-      }
-
-      launch();
-    })
-    .withFailureHandler(function(e){ onFail(e); })
-    .startChunkedUpload(startData);
-}
-
-// Throttle progress UI repaints — full render() is expensive with parallel chunks
-var PROGRESS_THROTTLE_MS = 250;
-function makeProgressThrottle(renderFn) {
-  var last = 0;
-  return function(){
-    var now = Date.now();
-    if (now - last < PROGRESS_THROTTLE_MS) return;
-    last = now;
-    renderFn();
-  };
-}
-
-// ===================== UPLOAD =====================
-function doWsUp(input,sid){
-  var files=Array.from(input.files);
-  if(!files.length)return;
-  var capEl=document.getElementById('cap_'+sid);
-  var description=capEl ? capEl.value.trim() : '';
-  var total=files.length,done=0;
-  wsUploadProgress[sid]={current:0,total:total,percent:0};
-  renderWs();
-  toast('อัปโหลด '+total+' ไฟล์...','success');
-  var throttledRenderWs = makeProgressThrottle(renderWs);
-  files.forEach(function(file){
-    uploadOneFile(
-      file,
-      {sectionId:sid,description:description},
-      function(r){
-        done++;
-        if(!wsMap[sid])wsMap[sid]=[];
-        wsMap[sid].push({fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:r.sizeText||'',description:r.description||description||''});
-        wsUploadProgress[sid]={current:done,total:total,percent:Math.round(done/total*100)};
-        if(done===total){delete wsUploadProgress[sid];if(capEl)capEl.value='';toast('อัปโหลดเสร็จ','success');}
-        renderWs();
-      },
-      function(err){
-        done++;
-        wsUploadProgress[sid]={current:done,total:total,percent:Math.round(done/total*100)};
-        var msg='อัปโหลดไม่สำเร็จ: '+(err?String(err).substring(0,120):'unknown');
-        if(done===total){delete wsUploadProgress[sid];}
-        toast(msg,'error');
-        console.error('[WS upload error]',err);
-        renderWs();
-      },
-      function(sent,total_bytes){
-        wsUploadProgress[sid]={current:done,total:total,percent:Math.round(sent/total_bytes*100),chunkMode:true};
-        throttledRenderWs();
-      }
-    );
+  var html='',visibleSlides=0;
+  app.slides.forEach(function(slide){
+    var visible=slide.items.filter(itemVisible);if(!visible.length)return;visibleSlides++;
+    var req=slide.items.filter(function(x){return x.required}).length;
+    var got=slide.items.filter(function(x){return x.required&&filesFor(x.id).length}).length;
+    var collapsed=!!app.collapsed[slide.id];
+    html+='<section class="slide '+(collapsed?'collapsed':'')+'" id="slide_'+slide.id+'">';
+    html+='<div class="slide-head" onclick="toggleSlide(\''+slide.id+'\')"><div class="slide-no">'+slide.id+'</div><div class="slide-title"><h2>'+escapeHtml(slide.title)+'</h2><p>'+escapeHtml(slide.subtitle)+'</p></div><div class="slide-progress"><strong>'+got+'/'+req+'</strong><small>หัวข้อจำเป็น</small></div><div class="chev">⌄</div></div><div class="items">';
+    visible.forEach(function(item){html+=renderItem(item)});
+    html+='</div></section>';
   });
-  input.value='';
+  if(!visibleSlides)html='<div class="empty-filter">ไม่พบหัวข้อในตัวกรองนี้</div>';
+  document.getElementById('slides').innerHTML=html;
 }
 
-// ===================== DELETE =====================
-function doDelWs(sid,idx){
-  var fs=wsMap[sid];if(!fs||!fs[idx])return;
-  if(!confirm('ลบไฟล์นี้?'))return;
-  var fid=fs[idx].fileId;
-  google.script.run
-    .withSuccessHandler(function(r){
-      if(r.success){wsMap[sid].splice(idx,1);if(curP&&curP.fileId===fid)closeM();toast('ลบสำเร็จ','success');}
-      else toast('ลบล้มเหลว','error');
-      renderWs();
-    })
-    .withFailureHandler(function(){toast('เกิดข้อผิดพลาด','error')})
-    .deleteFile(fid);
+function renderItem(item){
+  var files=filesFor(item.id),has=files.length>0,progress=app.uploading[item.id];
+  var html='<article class="item '+(has?'complete':'')+'"><div class="item-top"><div class="status">'+(has?'✓':'○')+'</div><div class="item-body">';
+  html+='<div class="item-title-row"><h3>'+escapeHtml(item.title)+'</h3><span class="badge priority-'+item.priority+'">Priority '+item.priority+'</span>'+(!item.required?'<span class="badge optional">ไม่บังคับ</span>':'')+'</div>';
+  html+='<div class="code">'+escapeHtml(item.id)+'.jpg</div><div class="hint">'+escapeHtml(item.hint)+'</div>';
+  if(files.length){html+='<div class="gallery">';files.forEach(function(f){html+='<div class="photo" onclick="openPhoto(\''+f.id+'\')"><img src="'+escapeAttr(f.thumbnail)+'" loading="lazy" alt="'+escapeAttr(item.title)+'"><button class="delete" onclick="event.stopPropagation();deletePhoto(\''+f.id+'\')">×</button>'+(f.description?'<span class="caption-dot">มีคำอธิบาย</span>':'')+'</div>'});html+='</div>'}
+  html+='<textarea class="evidence-note" id="note_'+item.id+'" maxlength="1000" placeholder="วันที่ / กิจกรรม / สิ่งที่นักเรียนทำ / ผลลัพธ์ที่เห็น (ไม่บังคับ)"></textarea>';
+  html+='<div class="upload-row"><label class="upload upload-camera">📷 ถ่ายภาพ<input type="file" accept="image/*" capture="environment" onchange="selectFiles(this,\''+item.id+'\')"></label><label class="upload">🖼 เลือกจากเครื่อง<input type="file" accept="image/*" multiple onchange="selectFiles(this,\''+item.id+'\')"></label></div>';
+  if(progress){html+='<div class="upload-progress">'+escapeHtml(progress.text)+'<div class="mini-progress"><div style="width:'+progress.percent+'%"></div></div></div>'}
+  html+='</div></div></article>';return html;
 }
 
-// ===================== MODAL =====================
-function openM(mode,id,idx){
-  var fs=wsMap[id];if(!fs||!fs[idx])return;
-  var f=fs[idx];
-  curP={mode:mode,id:id,idx:idx,fileId:f.fileId,fileName:f.fileName,isVideo:f.isVideo,description:f.description||''};
-  var imgEl=document.getElementById('mImg');
-  var vidEl=document.getElementById('mVid');
-  if(f.isVideo){imgEl.classList.add('hidden');vidEl.classList.remove('hidden');vidEl.src=f.previewUrl||'';}
-  else{
-    vidEl.classList.add('hidden');vidEl.src='';
-    imgEl.classList.remove('hidden');
-    // Use the real file URL so the full-resolution image is shown in the preview,
-    // not the low-quality thumbnail served by the /thumbnail endpoint.
-    imgEl.src='https://drive.google.com/uc?export=view&id='+f.fileId;
-    // Fallback: if the direct URL fails (e.g. large-file virus-scan redirect),
-    // fall back to a high-res thumbnail so something is always displayed.
-    imgEl.onerror=function(){imgEl.onerror=null;imgEl.src=f.thumbnail.replace('sz=w400','sz=w2000');};
-  }
-  document.getElementById('mNm').textContent=f.fileName;
-  var descEl=document.getElementById('mDesc');
-  if(f.description){descEl.textContent=f.description;descEl.classList.remove('hidden');}
-  else{descEl.textContent='';descEl.classList.add('hidden');}
-  document.getElementById('mSz').textContent=f.sizeText||'';
-  document.getElementById('mDl').onclick=function(){doDelWs(id,idx);};
-  document.getElementById('repIn').onchange=function(){doReplace(this);};
-  document.getElementById('modal').classList.remove('hidden');
+function toggleSlide(id){app.collapsed[id]=!app.collapsed[id];render()}
+function collapseAll(){
+  var allCollapsed=app.slides.every(function(s){return !!app.collapsed[s.id]});
+  app.slides.forEach(function(s){app.collapsed[s.id]=!allCollapsed});
+  render();
 }
-function closeM(e){
-  if(e&&e.target!==document.getElementById('modal'))return;
-  document.getElementById('modal').classList.add('hidden');
-  document.getElementById('mVid').src='';
-  curP=null;
+function selectFiles(input,itemId){
+  var files=Array.from(input.files||[]);input.value='';if(!files.length)return;
+  var note=document.getElementById('note_'+itemId);var description=note?note.value.trim():'';
+  uploadQueue(files,itemId,description,0);
 }
-
-// ===================== REPLACE =====================
-function doReplace(input){
-  var file=input.files[0];if(!file||!curP)return;
-  var cp=curP;
-  toast('กำลังเปลี่ยนไฟล์...','success');
-  var extraFields={oldFileId:cp.fileId,sectionId:cp.id,description:cp.description||''};
-
-  google.script.run
-    .withSuccessHandler(function(){
-      uploadOneFile(
-        file,
-        extraFields,
-        function(r){
-          var fs=wsMap[cp.id];
-          if(fs&&fs[cp.idx])fs[cp.idx]={fileId:r.fileId,fileName:r.fileName,isVideo:r.isVideo,mimeType:r.mimeType,thumbnail:r.thumbnail,previewUrl:r.previewUrl,sizeText:r.sizeText||'',description:r.description||cp.description||''};
-          curP.fileId=r.fileId;curP.fileName=r.fileName;curP.isVideo=r.isVideo;
-          openM(cp.mode,cp.id,cp.idx);
-          renderWs();
-          toast('เปลี่ยนสำเร็จ','success');
-        },
-        function(){toast('อัปโหลดไฟล์ใหม่ล้มเหลว','error');}
-      );
-    })
-    .withFailureHandler(function(){toast('เกิดข้อผิดพลาด','error')})
-    .deleteFile(cp.fileId);
-  input.value='';
+function uploadQueue(files,itemId,description,index){
+  if(index>=files.length){delete app.uploading[itemId];render();showToast('อัปโหลดครบ '+files.length+' รูปแล้ว');return;}
+  var file=files[index];
+  if(!/^image\//.test(resolveMime(file))){showToast('ข้ามไฟล์ที่ไม่ใช่รูปภาพ: '+file.name,true);uploadQueue(files,itemId,description,index+1);return;}
+  app.uploading[itemId]={text:'กำลังอัปโหลด '+(index+1)+'/'+files.length+' · '+file.name,percent:0};render();
+  uploadOne(file,itemId,description,function(result){app.files.unshift(result.file);uploadQueue(files,itemId,description,index+1)},function(err){delete app.uploading[itemId];render();showToast('อัปโหลดไม่สำเร็จ: '+errorText(err),true)},function(p){app.uploading[itemId]={text:'กำลังอัปโหลด '+(index+1)+'/'+files.length+' · '+file.name,percent:p};renderProgress(itemId,p)});
 }
-
-// ===================== REFRESH =====================
-function doWsRefresh(){
-  showOv('กำลังโหลดข้อมูล...');
-  google.script.run
-    .withSuccessHandler(function(files){
-      wsMap={};
-      files.forEach(function(f){
-        var sid=f.sectionId;if(!sid)return;
-        if(!wsMap[sid])wsMap[sid]=[];
-        wsMap[sid].push({fileId:f.id,fileName:f.name,isVideo:f.isVideo,mimeType:f.mimeType,thumbnail:f.thumbnail,previewUrl:f.previewUrl,sizeText:f.sizeText||'',description:f.description||''});
-      });
-      renderWs();hideOv();
-    })
-    .withFailureHandler(function(){hideOv();toast('โหลดข้อมูลล้มเหลว','error')})
-    .getWsFiles();
+function resolveMime(file){var ext=(file.name.split('.').pop()||'').toLowerCase();var map={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',heic:'image/heic',heif:'image/heif'};return file.type||map[ext]||'application/octet-stream'}
+function uploadOne(file,itemId,description,done,fail,progress){
+  var mime=resolveMime(file);
+  if(file.size>LARGE_THRESHOLD){uploadChunked(file,mime,itemId,description,done,fail,progress);return;}
+  var reader=new FileReader();reader.onload=function(){
+    google.script.run.withSuccessHandler(function(r){if(r&&r.success)done(r);else fail((r&&r.error)||'ไม่ทราบสาเหตุ')}).withFailureHandler(fail).uploadPaFile({itemId:itemId,fileName:file.name,mimeType:mime,dataUrl:String(reader.result).replace(/^data:[^;]+/,'data:'+mime),description:description});
+  };reader.onerror=function(){fail('อ่านไฟล์ไม่ได้')};reader.readAsDataURL(file);
 }
-
-// ===================== ZIP =====================
-function doWsZip(){
-  showOv('กำลังสร้าง ZIP...');
-  google.script.run
-    .withSuccessHandler(function(r){hideOv();if(r.success){toast('สร้าง ZIP สำเร็จ!','success');window.open(r.downloadUrl,'_blank')}else toast('ล้มเหลว: '+r.error,'error');})
-    .withFailureHandler(function(){hideOv();toast('เกิดข้อผิดพลาด','error')})
-    .createWsZip();
+function uploadChunked(file,mime,itemId,description,done,fail,progress){
+  var total=Math.ceil(file.size/CHUNK_SIZE);
+  google.script.run.withSuccessHandler(function(init){
+    if(!init||!init.success){fail((init&&init.error)||'สร้าง session ไม่สำเร็จ');return}
+    sendChunk(0);
+    function sendChunk(index){
+      var start=index*CHUNK_SIZE,end=Math.min(start+CHUNK_SIZE,file.size),reader=new FileReader();
+      reader.onload=function(){var b64=String(reader.result).split(',')[1];google.script.run.withSuccessHandler(function(r){
+        if(!r||!r.success){fail((r&&r.error)||'ส่งส่วนข้อมูลไม่สำเร็จ');return}
+        progress(Math.round(end/file.size*100));
+        if(r.complete){if(r.file)done(r);else setTimeout(function(){fail('ระบบรวมไฟล์ไม่สมบูรณ์ กรุณารีเฟรชตรวจสอบ')},800);return}
+        sendChunk(index+1);
+      }).withFailureHandler(fail).uploadPaChunk({sessionId:init.sessionId,chunkIndex:index,chunk:b64});};
+      reader.onerror=function(){fail('อ่านส่วนข้อมูลไม่ได้')};reader.readAsDataURL(file.slice(start,end));
+    }
+  }).withFailureHandler(fail).startPaChunkedUpload({itemId:itemId,fileName:file.name,mimeType:mime,description:description,totalChunks:total});
 }
+function renderProgress(itemId,percent){var slide=document.getElementById('slide_'+itemId.slice(0,3));if(!slide)return;var bar=slide.querySelector('.mini-progress>div');if(bar)bar.style.width=percent+'%'}
 
-// ===================== UTILS =====================
-function esc(v){return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function toast(m,t){var el=document.getElementById('toast');el.textContent=m;el.className='toast toast-'+t+' show';clearTimeout(window._tt);window._tt=setTimeout(function(){el.className='toast'},3000)}
-function showOv(t){document.getElementById('ovT').textContent=t;document.getElementById('ov').classList.remove('hidden')}
-function hideOv(){document.getElementById('ov').classList.add('hidden')}
+function openPhoto(fileId){var f=app.files.find(function(x){return x.id===fileId});if(!f)return;document.getElementById('modalImage').src='https://drive.google.com/uc?export=view&id='+f.id;document.getElementById('modalImage').onerror=function(){this.onerror=null;this.src=f.thumbnail.replace('sz=w600','sz=w2000')};document.getElementById('modalName').textContent=f.name+' · '+f.sizeText;document.getElementById('modalDesc').textContent=f.description||'ไม่มีคำอธิบาย';document.getElementById('modalDrive').href=f.viewUrl;document.getElementById('modalDelete').onclick=function(){deletePhoto(f.id)};document.getElementById('modal').classList.remove('hidden')}
+function closeModal(e){if(e&&e.target!==document.getElementById('modal'))return;document.getElementById('modal').classList.add('hidden');document.getElementById('modalImage').src=''}
+function deletePhoto(fileId){if(!confirm('ลบรูปนี้ออกจาก Google Drive หรือไม่?'))return;showOverlay('กำลังลบรูป...');google.script.run.withSuccessHandler(function(r){hideOverlay();if(!r||!r.success){showToast((r&&r.error)||'ลบไม่สำเร็จ',true);return}app.files=app.files.filter(function(f){return f.id!==fileId});closeModal();render();showToast('ลบรูปแล้ว')}).withFailureHandler(function(e){hideOverlay();showToast(errorText(e),true)}).deletePaFile(fileId)}
+function downloadZip(){showOverlay('กำลังรวบรวมและสร้างไฟล์ ZIP...');google.script.run.withSuccessHandler(function(r){hideOverlay();if(r&&r.success){window.open(r.downloadUrl,'_blank');showToast('สร้าง ZIP สำเร็จ')}else showToast((r&&r.error)||'สร้าง ZIP ไม่สำเร็จ',true)}).withFailureHandler(function(e){hideOverlay();showToast(errorText(e),true)}).createPaZip()}
+function openDrive(){if(app.folderUrl)window.open(app.folderUrl,'_blank')}
+function showOverlay(text){document.getElementById('overlayText').textContent=text;document.getElementById('overlay').classList.remove('hidden')}
+function hideOverlay(){document.getElementById('overlay').classList.add('hidden')}
+function showToast(text,isError){var el=document.getElementById('toast');el.textContent=text;el.className='toast show'+(isError?' error':'');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(function(){el.className='toast'},3200)}
+function errorText(e){return String((e&&e.message)||e||'ไม่ทราบสาเหตุ').slice(0,180)}
+function escapeHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function escapeAttr(v){return escapeHtml(v)}
 </script>
 </body>
 </html>
